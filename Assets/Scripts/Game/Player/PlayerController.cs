@@ -1,216 +1,168 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 using static CameraMovement;
 
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(PlayerMovementState))]
 [RequireComponent(typeof(PlayerInputManager))]
-public class PlayerController : BaseBehaviour
+public partial class PlayerController : BaseBehaviour
 {
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private Vector3 LastMovementVector;
-    private bool isJumping;
+    #region Dependencies
 
     private PlayerInputManager _playerInputManager;
-
-    private Rigidbody _rigidbody;
-
-    private PlayerMovementState _playerMovementState;
-
-    public Transform Model;
-
-    [SerializeField]
-    private Animator _modelAnimator;
 
     protected override Animator Animator => _modelAnimator;
 
     private PlayerInputManager PlayerInputManager
+        => GetInitialisedComponent(ref _playerInputManager);
 
-    { get { return GetInitialisedComponent(ref _playerInputManager); } }
+    PlayerAnimationEvents playerAnimationEvents;
 
-    private PlayerMovementState PlayerMovementState
-    { get { return GetInitialisedComponent(ref _playerMovementState); } }
+    #endregion Dependencies
 
-    private Rigidbody Rigidbody
-    { get { return GetInitialisedComponent(ref _rigidbody); } }
+    #region Life Cycle
 
+    private void Start()
+    {
+        var playerAnimationEvents = GetComponentInChildren<PlayerAnimationEvents>();
+
+        Assert.IsNotNull(playerAnimationEvents);
+
+        playerAnimationEvents.OnJumpAnimationReady += OnJumpAnimationReady;
+        playerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
+    }
     private void Update()
     {
         Assert.IsNotNull(Model);
 
-        UpdateMovement();
+        direction = PlayerInputManager.MovementVector;
         PerformMovement();
         PerformRotation();
-
     }
+
+    #endregion Life Cycle
+
+    #region Methods
 
     private void PerformMovement()
     {
-        PlayerMovementState.Velocity += PlayerMovementState.Gravity * PlayerMovementState.GravityScale * Time.deltaTime;
+        var movementVector = PlayerInputManager.MovementVector;
+        var movementJumpFactor = (isJumping ? 5 : 1);
+        var x = movementVector.x * speed;
+        var z = movementVector.z * speed;
+        var y = 0f;
+        var currentMovement = new Vector3(x, y, z) * movementJumpFactor;
 
-        Animator.SetBool("IsFalling", PlayerMovementState.Velocity < 0);
-
-        if (PlayerMovementState.IsGrounded() && PlayerMovementState.Velocity < 0)
+        if (!isJumping)
         {
-            PlayerMovementState.Velocity = 0;
-            Animator.SetBool("OnGround", true);
+            isJumping = PlayerInputManager.JumpPressedDown;
+            isPlayingPreJumpAnimation = isJumping;
+            DebugLog($"Started jump", condition: isJumping);
         }
-        if (PlayerInputManager.JumpPressedDown)
-            PlayerMovementState.Velocity = PlayerMovementState.JumpForce;
+        else
+        {
+            if (!isPlayingPreJumpAnimation)
+            {
+                velocity += -gravity * gravityScale * Time.deltaTime;
 
-        var x = PlayerMovementState.Direction.x * PlayerMovementState.Speed;
-        var y = PlayerMovementState.Velocity;
-        var z = PlayerMovementState.Direction.z * PlayerMovementState.Speed;
+
+                if (velocity <= 0)
+                {
+                    velocity = Math.Max(velocity, 0);
+                    isFalling = true;
+                }
+
+                y = velocity;
+
+
+                if (isFalling)
+                {
+                    if (IsGrounded())
+                    {
+                        isFalling = false;
+                        isJumping = false;
+                        isGrounded = true;
+                        isLanding = true;
+                    }
+                }
+            }
+
+        }
 
         LastMovementVector = new Vector3(x, y, z);
-//        transform.Translate(LastMovementVector * Time.deltaTime);
+        transform.Translate(LastMovementVector * Time.deltaTime);
+        var isWalking = !isJumping && currentMovement != Vector3.zero;
 
-
-        // var playerDirection = PlayerMovementState.Direction;
-
-        //  if (playerDirection == Vector3.zero)
-        return;
-
-        //transform.position = new Vector3(horizontal, 0, vertical) * speed * Time.deltaTime;
-
-        // transform.Translate(PlayerMovementState.Direction * PlayerMovementState.Speed * Time.deltaTime);
+        Animator.SetBool("IsJumping", isJumping);
+        Animator.SetBool("IsWalking", isWalking);
+        Animator.SetBool("OnGround", isGrounded);
+        Animator.SetBool("IsLanding", isLanding);
+        Animator.SetBool("IsFalling", isFalling);
     }
 
     private void PerformRotation()
     {
-        if (PlayerMovementState.Direction == Vector3.zero)
+        if (direction == Vector3.zero)
             return;
         var currentRotation = Model.rotation.eulerAngles;
 
-        float rotationY = 0;
-
-        if (PlayerMovementState.Direction.z == 0)
-        {
-            if (PlayerMovementState.Direction.x > 0)
-                rotationY = 90;
-            else if (PlayerMovementState.Direction.x < 0)
-                rotationY = -90;
-        }
-
-        else
-        {
-            if (PlayerMovementState.Direction.z > 0)
-            {
-
-                if (PlayerMovementState.Direction.x > 0)
-                    rotationY = 45;
-                else if (PlayerMovementState.Direction.x < 0)
-                    rotationY = -45;
-                else
-                    rotationY = 0;
-            }
-            else
-            {
-                if (PlayerMovementState.Direction.x > 0)
-                    rotationY = 180 - 45;
-                else if (PlayerMovementState.Direction.x < 0)
-                    rotationY = 180 + 45;
-                else
-                    rotationY = 180;
-
-            }
-        }
-        var rotationOffset = 25; // necessary to make the model look straight as it is slightly rotated.
-        currentRotation.y = rotationY;// + rotationOffset;
-
-        /*
-
-                var delta = 1f * PlayerMovementState.RotationSpeed;
-                if (PlayerMovementState.Direction.x > 0)
-                    delta = -delta;
-
-                delta = Time.deltaTime * delta;
-                currentRotation = currentRotation.Update(y: currentRotation.y - delta);
-         */
+        currentRotation.y = CalculateRotation();
 
         Model.localEulerAngles = currentRotation;
     }
 
-
-    [SerializeField]
-    private bool WaitForJumpKeyUp = false;
-    private void UpdateMovement()
+    private float CalculateRotation()
     {
-        var baseSpeed = 1;
-
-        var x = PlayerInputManager.RightPressed ? baseSpeed :
-                PlayerInputManager.LeftPressed ? -baseSpeed
-                : 0;
-
-        var z = PlayerInputManager.UpPressed ? baseSpeed :
-                PlayerInputManager.DownPressed ? -baseSpeed
-                : 0;
-
-        var y = 0f;
-
-        if (WaitForJumpKeyUp)
+        if (direction.z == 0)
         {
+            if (direction.x == 0)
+                return 0;
 
-
-            if (!PlayerInputManager.JumpPressed)
-                WaitForJumpKeyUp = false;
-        }
-        else if (!PlayerMovementState.IsJumping && PlayerInputManager.JumpPressedDown && PlayerMovementState.IsGrounded())
-        {
-            y = PlayerMovementState.JumpSpeed;
-            WaitForJumpKeyUp = true;
-            PlayerMovementState.IsJumping = PlayerInputManager.JumpPressed;
-        }
-        else if (!PlayerInputManager.JumpPressedDown && PlayerMovementState.IsGrounded())
-        {
-            PlayerMovementState.IsJumping = false;
+            return 90 * (direction.x > 0 ? 1 : -1);
         }
 
+        if (direction.z > 0)
+            return direction.x == 0 ? 0 :
+                   direction.x > 0 ? 45 : -45;
 
-        PlayerMovementState.UpdateDirection(x, y, z);
-        Animator.SetBool("IsJumping", PlayerMovementState.IsJumping);
-        Animator.SetBool("IsWalking", !PlayerMovementState.IsJumping && PlayerMovementState.Direction != Vector3.zero);
-        Animator.SetBool("OnGround", !PlayerMovementState.IsJumping);
+        if (direction.x == 0)
+            return 180;
 
-
-        /*
-         
-
-
-        var currentVelocity = Rigidbody.velocity;
-        var x = 0f;
-        var y = 0f;
-        var z = 0f;
-
-        var baseSpeed = PlayerMovementState.Speed; 
-
-        if (PlayerInputManager.LeftPressed)
-            x = -baseSpeed;
-        else if (PlayerInputManager.RightPressed)
-            x = baseSpeed;
-        else
-            x = currentVelocity.x;
-
-        if (PlayerInputManager.UpPressed)
-            z = baseSpeed;
-        else if (PlayerInputManager.DownPressed)
-            z = -baseSpeed;
-        else
-            z = currentVelocity.z;
-
-        PlayerMovementState.IsJumping = PlayerInputManager.JumpPressed;
-
-        if (PlayerInputManager.JumpPressedDown && PlayerMovementState.IsGrounded())
-            y = PlayerMovementState.JumpSpeed;
-        else
-            y= currentVelocity.y;
-
-        PlayerMovementState.UpdateDirection(x, y, z);
-         */
+        return 180 - (direction.x > 0 ? 45 : -45);
     }
+
+    public bool IsGrounded()
+    {
+        isGrounded = Physics.CheckSphere(groundCheck.position, 0.1f, groundLayer);
+        return isGrounded;
+    }
+
+    #endregion Methods
+
+
+    #region Animation Triggers
+
+
+    private void OnJumpAnimationReady()
+    {
+        DebugLog($"{nameof(OnJumpAnimationReady)}- Called");
+        isPlayingPreJumpAnimation = false;
+        velocity = jumpForce;
+        isJumping = true;
+
+        LastMovementVector.y = velocity;
+        transform.Translate(LastMovementVector * Time.deltaTime);
+    }
+
+
+    private void OnLandingAnimationEnded()
+    {
+        isLanding = false;
+        isJumping = false;
+    }
+
+
+    #endregion
 }

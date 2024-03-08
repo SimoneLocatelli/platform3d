@@ -7,9 +7,9 @@ using UnityEngine;
 
 public class PlayerInputManager : BaseBehaviour
 {
-
     [Header("Movement Keys")]
     public KeyCode Up = KeyCode.W;
+
     public KeyCode Down = KeyCode.S;
     public KeyCode Left = KeyCode.A;
     public KeyCode Right = KeyCode.D;
@@ -25,6 +25,12 @@ public class PlayerInputManager : BaseBehaviour
     public bool JumpPressed { get; set; }
     public bool JumpPressedDown { get; set; }
 
+    [Header("Info")]
+    [SerializeField]
+    [ReadOnlyProperty]
+    private Vector3 _movementVector = new Vector3();
+
+    public Vector3 MovementVector => _movementVector;
 
     public void Update()
     {
@@ -34,6 +40,18 @@ public class PlayerInputManager : BaseBehaviour
         RightPressed = Input.GetKey(Right);
         JumpPressed = Input.GetKey(Jump);
         JumpPressedDown = Input.GetKeyDown(Jump);
+
+        UpdateMovementVector();
     }
 
+    private void UpdateMovementVector()
+    {
+        _movementVector.x = RightPressed ? 1 :
+                           LeftPressed ? -1
+                           : 0;
+
+        _movementVector.z = UpPressed ? 1 :
+                            DownPressed ? -1
+                            : 0;
+    }
 }

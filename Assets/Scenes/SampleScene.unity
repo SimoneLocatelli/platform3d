@@ -692,11 +692,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EnableDebugLog: 0
-  canJump: 0
   speed: 5
-  rotationSpeed: 60
-  jumpSpeed: 15
-  jumpForce: 40.1
+  jumpForce: 25
   gravity: 9.81
   gravityScale: 5
   groundCheck: {fileID: 1531213103}
@@ -713,7 +710,6 @@ MonoBehaviour:
   isPlayingPreJumpAnimation: 0
   isFalling: 0
   LastMovementVector: {x: 0, y: 0, z: 0}
-  WaitForJumpKeyUp: 0
 --- !u!114 &1294019096
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -145,6 +145,7 @@ public static class VectorExtensions
 
     public static Vector3 MoveTowards(this Vector3 source, Vector3 target, float speed)
         => Vector3.MoveTowards(source, target, speed * Time.deltaTime);
+
     public static Vector3 MoveTowards(this Vector3 source, Vector3 target, float speed, float time)
         => Vector3.MoveTowards(source, target, speed * time);
 
@@ -178,7 +179,6 @@ public static class VectorExtensions
 
         return new Vector3(newX, newY, newZ);
     }
-
 
     public static Vector3 Add(this Vector3 vector, float xDelta = 0, float yDelta = 0, float zDelta = 0)
     {

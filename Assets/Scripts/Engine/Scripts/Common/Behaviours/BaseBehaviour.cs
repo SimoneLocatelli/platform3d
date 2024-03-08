@@ -8,7 +8,7 @@ public abstract class BaseBehaviour : MonoBehaviour
 {
     #region Properties
 
-    [Header("Debug")]
+    [Header("Debug", order = 10000)]
     public bool EnableDebugLog = false;
     private Animator _animator;
     private AudioManager _audioManager;
@@ -29,7 +29,7 @@ public abstract class BaseBehaviour : MonoBehaviour
 
     public GameObject TopParent { get => gameObject.GetTopParent(); }
 
-    protected Animator Animator { get => GetInitialisedComponent(ref _animator); }
+    protected virtual Animator Animator { get => GetInitialisedComponent(ref _animator); }
 
     protected AudioManager AudioManager { get => GetInitialisedComponent(ref _audioManager); }
 

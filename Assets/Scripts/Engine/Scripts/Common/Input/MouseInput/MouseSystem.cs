@@ -9,6 +9,7 @@ public class MouseSystem
         get => defaultRadius;
         set => defaultRadius = Mathf.Clamp(value, 1f, 5f);
     }
+    public Vector2 Axis => new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
     public GameObject GetItemAtMousePosition() => GetItemAtMousePosition(DefaultRadius);
 
@@ -50,6 +51,9 @@ public class MouseSystem
 
         return true;
     }
+
+    public bool IsInsideGameScreen()
+        => IsInsideGameScreen(out Vector2 mousePosition);
 
     public bool IsZooming(out Vector2 mouseScrollDelta)
     {

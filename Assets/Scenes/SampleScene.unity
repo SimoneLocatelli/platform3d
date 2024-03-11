@@ -423,8 +423,7 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
-  - component: {fileID: 963194229}
-  - component: {fileID: 963194230}
+  - component: {fileID: 963194233}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -500,13 +499,13 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.1072185, y: 0, z: 0, w: 0.99423546}
-  m_LocalPosition: {x: 0, y: 4.82, z: -8}
+  m_LocalPosition: {x: 0, y: 2.95, z: -3.28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 12.31, y: 0, z: 0}
---- !u!114 &963194229
+--- !u!114 &963194233
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -515,30 +514,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6de3114162104cd45a3873a86f7ffafe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _target: {fileID: 1294019093}
-  Speed: 10
-  offset: {x: 0, y: 1.87, z: -8}
-  UpdateInExperienceEditorMode: 1
---- !u!114 &963194230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2986d27cda68624183cde449b73e074, type: 3}
+  m_Script: {fileID: 11500000, guid: e478dcb92969a69438d2631b11e9a40e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   EnableDebugLog: 0
-  currentVelocity: {x: 0, y: 0, z: 0}
-  distance: 3
-  player: {fileID: 1294019093}
-  smoothTime: 0.25
+  radius: 5
+  sensitivity: 20
+  forceRefresh: 0
+  target: {fileID: 1294019093}
+  mouseAxis: {x: 0, y: 0}
+  isInsideGameScreen: 0
+  Angle: 1
 --- !u!1 &1294019089
 GameObject:
   m_ObjectHideFlags: 0
@@ -692,10 +678,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EnableDebugLog: 0
-  speed: 5
+  _modelOrientation: {x: 0, y: 0, z: 0}
+  _modelOrientationNormalised: {x: 0, y: 0, z: 0}
+  Camera: {fileID: 963194228}
+  speed: 2.35
   jumpForce: 25
   gravity: 9.81
   gravityScale: 5
+  turnSmoothTime: 0.2
+  turnSmoothVelocity: 0
+  speedSmoothTime: 0.1
+  speedSmoothVelocity: 0
+  currentSpeed: 0
   groundCheck: {fileID: 1531213103}
   groundLayer:
     serializedVersion: 2
@@ -722,13 +716,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5146aca8f3bbe24fbe80cc39faaa243, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnableDebugLog: 0
+  EnableDebugLog: 1
   Up: 119
   Down: 115
   Left: 97
   Right: 100
   Jump: 32
   _movementVector: {x: 0, y: 0, z: 0}
+  _upPressed: 0
+  _upPressedDown: 0
+  _downPressed: 0
+  _downPressedDown: 0
+  _leftPressed: 0
+  _leftPressedDown: 0
+  _rightPressed: 0
+  _rightPressedDown: 0
+  _jumpPressed: 0
+  _jumpPressedDown: 0
 --- !u!114 &1294019097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -800,7 +804,7 @@ GameObject:
   - component: {fileID: 1861236224}
   - component: {fileID: 1861236223}
   - component: {fileID: 1861236227}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -887,7 +891,7 @@ Transform:
   m_GameObject: {fileID: 1861236222}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.15593816, y: 1.67, z: 0}
+  m_LocalPosition: {x: -0.37, y: 1.67, z: 0.001}
   m_LocalScale: {x: 0.04041943, y: 3.29, z: 0.39}
   m_ConstrainProportionsScale: 0
   m_Children: []

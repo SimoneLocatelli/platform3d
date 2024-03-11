@@ -8,7 +8,7 @@ public abstract class BaseBehaviour : MonoBehaviour
 {
     #region Properties
 
-    [Header("Debug", order = 10000)]
+    [Header("Logging", order = 10000)]
     public bool EnableDebugLog = false;
     private Animator _animator;
     private AudioManager _audioManager;

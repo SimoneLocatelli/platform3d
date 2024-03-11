@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
-using static CameraMovement;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PlayerInputManager))]
 public partial class PlayerController : BaseBehaviour
@@ -18,7 +18,19 @@ public partial class PlayerController : BaseBehaviour
     private PlayerInputManager PlayerInputManager
         => GetInitialisedComponent(ref _playerInputManager);
 
-    PlayerAnimationEvents playerAnimationEvents;
+    private PlayerAnimationEvents playerAnimationEvents;
+
+    public Vector3 ModelOrientation => Model.localEulerAngles;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private Vector3 _modelOrientation;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private Vector3 _modelOrientationNormalised;
+
+    public Transform Camera;
 
     #endregion Dependencies
 
@@ -33,13 +45,15 @@ public partial class PlayerController : BaseBehaviour
         playerAnimationEvents.OnJumpAnimationReady += OnJumpAnimationReady;
         playerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
     }
+
     private void Update()
     {
         Assert.IsNotNull(Model);
 
+        _modelOrientation = ModelOrientation;
+        _modelOrientationNormalised = _modelOrientation.normalized;
         direction = PlayerInputManager.MovementVector;
         PerformMovement();
-        PerformRotation();
     }
 
     #endregion Life Cycle
@@ -67,7 +81,6 @@ public partial class PlayerController : BaseBehaviour
             {
                 velocity += -gravity * gravityScale * Time.deltaTime;
 
-
                 if (velocity <= 0)
                 {
                     velocity = Math.Max(velocity, 0);
@@ -75,7 +88,6 @@ public partial class PlayerController : BaseBehaviour
                 }
 
                 y = velocity;
-
 
                 if (isFalling)
                 {
@@ -88,11 +100,25 @@ public partial class PlayerController : BaseBehaviour
                     }
                 }
             }
-
         }
 
-        LastMovementVector = new Vector3(x, y, z);
-        transform.Translate(LastMovementVector * Time.deltaTime);
+        LastMovementVector = new Vector3(x, 0, z);
+
+        bool running = false;
+        float runSpeed = speed;
+
+        float targetSpeed = ((running) ? runSpeed : speed) * LastMovementVector.magnitude;
+        if (LastMovementVector != Vector3.zero)
+        {
+            float targetRotation = Mathf.Atan2(LastMovementVector.x, LastMovementVector.z) * Mathf.Rad2Deg + Camera.eulerAngles.y;
+            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, turnSmoothTime);
+        }
+        currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, speedSmoothTime);
+
+        var dir = movementVector == Vector3.zero ? Vector3.zero : transform.forward * currentSpeed;
+        dir.y = y;
+        transform.Translate(dir * Time.deltaTime, Space.World);
+
         var isWalking = !isJumping && currentMovement != Vector3.zero;
 
         Animator.SetBool("IsJumping", isJumping);
@@ -102,35 +128,23 @@ public partial class PlayerController : BaseBehaviour
         Animator.SetBool("IsFalling", isFalling);
     }
 
-    private void PerformRotation()
+    private float CalculateRotation(float currentRotation)
     {
-        if (direction == Vector3.zero)
-            return;
-        var currentRotation = Model.rotation.eulerAngles;
+        if (!PlayerInputManager.RightPressedDown && !PlayerInputManager.LeftPressedDown)
+            return currentRotation;
 
-        currentRotation.y = CalculateRotation();
+        var sign = PlayerInputManager.RightPressedDown ? 1 : -1;
 
-        Model.localEulerAngles = currentRotation;
-    }
-
-    private float CalculateRotation()
-    {
         if (direction.z == 0)
+            currentRotation += 90 * sign;
+        else
         {
-            if (direction.x == 0)
-                return 0;
+            if (direction.z < 0)
+                currentRotation += 180;
 
-            return 90 * (direction.x > 0 ? 1 : -1);
+            currentRotation += 45 * sign;
         }
-
-        if (direction.z > 0)
-            return direction.x == 0 ? 0 :
-                   direction.x > 0 ? 45 : -45;
-
-        if (direction.x == 0)
-            return 180;
-
-        return 180 - (direction.x > 0 ? 45 : -45);
+        return currentRotation;
     }
 
     public bool IsGrounded()
@@ -141,9 +155,7 @@ public partial class PlayerController : BaseBehaviour
 
     #endregion Methods
 
-
     #region Animation Triggers
-
 
     private void OnJumpAnimationReady()
     {
@@ -156,13 +168,11 @@ public partial class PlayerController : BaseBehaviour
         transform.Translate(LastMovementVector * Time.deltaTime);
     }
 
-
     private void OnLandingAnimationEnded()
     {
         isLanding = false;
         isJumping = false;
     }
 
-
-    #endregion
+    #endregion Animation Triggers
 }

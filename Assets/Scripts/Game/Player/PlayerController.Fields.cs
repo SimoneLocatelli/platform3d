@@ -10,11 +10,10 @@ public partial class PlayerController : BaseBehaviour
 {
     #region Physics Fields
 
-    [Header("Physics")]
-    [Range(1, 30)]
+    [Header("Movement")]
+    [Range(1, 5)]
     [SerializeField]
-    private int speed = 5;
-
+    private float speed = 5;
 
     [SerializeField]
     private float jumpForce = 20;
@@ -26,6 +25,26 @@ public partial class PlayerController : BaseBehaviour
     [Range(0, 20)]
     [SerializeField]
     private float gravityScale = 5;
+
+    [SerializeField]
+    [Range(0.01f, 10f)]
+    private float turnSmoothTime = 0.2f;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private float turnSmoothVelocity;
+
+    [SerializeField]
+    [Range(0.01f, 10f)]
+    private float speedSmoothTime = 0.1f;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private float speedSmoothVelocity;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private float currentSpeed;
 
     #endregion Physics Fields
 
@@ -53,7 +72,7 @@ public partial class PlayerController : BaseBehaviour
 
     #region Info Fields
 
-    [Header("Info")]
+    [Header("Debug")]
     [ReadOnlyProperty]
     [SerializeField]
     private Vector3 direction;

@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerInputManager : BaseBehaviour
 {
     [Header("Movement Keys")]
     public KeyCode Up = KeyCode.W;
+
     public KeyCode Down = KeyCode.S;
     public KeyCode Left = KeyCode.A;
     public KeyCode Right = KeyCode.D;
 
     [Header("Actions")]
     public KeyCode Jump = KeyCode.Space;
+
+    public KeyCode Run = KeyCode.LeftControl;
 
     public bool UpPressed => _upPressed;
     public bool UpPressedDown => _upPressedDown;
@@ -30,6 +28,8 @@ public class PlayerInputManager : BaseBehaviour
 
     public bool JumpPressed => _jumpPressed;
     public bool JumpPressedDown => _jumpPressedDown;
+
+    public bool RunPressed => _runPressed;
 
     [Header("Info")]
     [SerializeField]
@@ -79,6 +79,14 @@ public class PlayerInputManager : BaseBehaviour
     [ReadOnlyProperty]
     private bool _jumpPressedDown;
 
+    [SerializeField]
+    [ReadOnlyProperty]
+    private bool _runPressed;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private bool _runPressedDown;
+
     public void Update()
     {
         _upPressed = Input.GetKey(Up);
@@ -95,6 +103,9 @@ public class PlayerInputManager : BaseBehaviour
 
         _jumpPressed = Input.GetKey(Jump);
         _jumpPressedDown = Input.GetKeyDown(Jump);
+
+        _runPressed = Input.GetKey(Run);
+        _runPressedDown = Input.GetKeyDown(Run);
 
         UpdateMovementVector();
 

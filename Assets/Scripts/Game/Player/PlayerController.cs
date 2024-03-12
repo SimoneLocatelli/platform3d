@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -102,6 +103,18 @@ public partial class PlayerController : BaseBehaviour
 
     [SerializeField]
     [ReadOnlyProperty]
+    private bool isWalking;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private bool isAttacking;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private bool isRunning;
+
+    [SerializeField]
+    [ReadOnlyProperty]
     private bool isGrounded;
 
     [SerializeField]
@@ -161,6 +174,7 @@ public partial class PlayerController : BaseBehaviour
 
         playerAnimationEvents.OnJumpAnimationReady += OnJumpAnimationReady;
         playerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
+        playerAnimationEvents.OnAttackAnimationEnded += OnAttackAnimationEnded;
 
         currentStamina = staminaMax;
     }
@@ -172,6 +186,7 @@ public partial class PlayerController : BaseBehaviour
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
         direction = PlayerInputManager.MovementVector;
+        PerformAttack();
         PerformMovement();
     }
 
@@ -179,9 +194,25 @@ public partial class PlayerController : BaseBehaviour
 
     #region Methods
 
+    private void PerformAttack()
+    {
+        isAttacking = isAttacking || PlayerInputManager.AttackPressedDown;
+
+        if (isAttacking)
+        {
+            float targetRotation = Mathf.Atan2(y: 0, x: 0) * Mathf.Rad2Deg + Camera.eulerAngles.y;
+            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, 0.01f);
+        }
+
+        Animator.SetBool("IsAttacking", isAttacking);
+    }
+
     private void PerformMovement()
     {
         var inputVector = PlayerInputManager.MovementVector;
+        if (isAttacking)
+            inputVector = Vector3.zero;
+
         var movementJumpFactor = (isJumping ? 5 : 1);
         var x = inputVector.x * speed;
         var z = inputVector.z * speed;
@@ -190,9 +221,12 @@ public partial class PlayerController : BaseBehaviour
 
         if (!isJumping)
         {
-            isJumping = PlayerInputManager.JumpPressedDown;
-            isPlayingPreJumpAnimation = isJumping;
-            DebugLog($"Started jump", condition: isJumping);
+            if (!isAttacking)
+            {
+                isJumping = PlayerInputManager.JumpPressedDown;
+                isPlayingPreJumpAnimation = isJumping;
+                DebugLog($"Started jump", condition: isJumping);
+            }
         }
         else
         {
@@ -222,8 +256,8 @@ public partial class PlayerController : BaseBehaviour
         }
 
         var movementVector = new Vector3(x, 0, z);
-        var isWalking = !isJumping && currentMovement != Vector3.zero;
-        var isRunning = isWalking && PlayerInputManager.RunPressed;
+        isWalking = !isJumping && currentMovement != Vector3.zero;
+        isRunning = isWalking && PlayerInputManager.RunPressed;
 
         float targetSpeed = speed + (isRunning ? runSpeed : 0); //* movementVector.magnitude;
         if (movementVector != Vector3.zero)
@@ -314,6 +348,11 @@ public partial class PlayerController : BaseBehaviour
     #endregion Methods
 
     #region Animation Triggers
+
+    private void OnAttackAnimationEnded()
+    {
+        isAttacking = false;
+    }
 
     private void OnJumpAnimationReady()
     {

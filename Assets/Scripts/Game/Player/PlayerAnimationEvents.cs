@@ -6,18 +6,26 @@ using System.Threading.Tasks;
 
 public class PlayerAnimationEvents : BaseBehaviour
 {
-    private OnJumpAnimationReadyHandler onJumpAnimationReady;
+    #region Events
+
+    // Jump Animation Ready
 
     public delegate void OnJumpAnimationReadyHandler();
+
+    private OnJumpAnimationReadyHandler onJumpAnimationReady;
+
     public event OnJumpAnimationReadyHandler OnJumpAnimationReady
     {
         add { onJumpAnimationReady += value; }
         remove { onJumpAnimationReady -= value; }
     }
 
-    private OnLandingAnimationEndedHandler onLandingAnimationEnded;
+    // Landing Animation Ended
 
     public delegate void OnLandingAnimationEndedHandler();
+
+    private OnLandingAnimationEndedHandler onLandingAnimationEnded;
+
     public event OnLandingAnimationEndedHandler OnLandingAnimationEnded
 
     {
@@ -25,10 +33,27 @@ public class PlayerAnimationEvents : BaseBehaviour
         remove { onLandingAnimationEnded -= value; }
     }
 
+    // Attack Animation Ended
+
+    public delegate void OnAttackAnimationEndedHandler();
+
+    private OnAttackAnimationEndedHandler onAttackAnimationEnded;
+
+    public event OnAttackAnimationEndedHandler OnAttackAnimationEnded
+
+    {
+        add { onAttackAnimationEnded += value; }
+        remove { onAttackAnimationEnded -= value; }
+    }
+
+    #endregion Events
+
     private void JumpAnimationTriggerCalled()
         => onJumpAnimationReady?.Invoke();
 
-
     private void LandingAnimationEndTriggerCalled()
         => onLandingAnimationEnded?.Invoke();
+
+    private void AttackAnimationEndTriggerCalled()
+        => onAttackAnimationEnded?.Invoke();
 }

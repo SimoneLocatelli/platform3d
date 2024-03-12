@@ -2,17 +2,7 @@
 
 public class PlayerInputManager : BaseBehaviour
 {
-    [Header("Movement Keys")]
-    public KeyCode Up = KeyCode.W;
-
-    public KeyCode Down = KeyCode.S;
-    public KeyCode Left = KeyCode.A;
-    public KeyCode Right = KeyCode.D;
-
-    [Header("Actions")]
-    public KeyCode Jump = KeyCode.Space;
-
-    public KeyCode Run = KeyCode.LeftControl;
+    #region Private Fields
 
     public bool UpPressed => _upPressed;
     public bool UpPressedDown => _upPressedDown;
@@ -31,14 +21,45 @@ public class PlayerInputManager : BaseBehaviour
 
     public bool RunPressed => _runPressed;
 
-    [Header("Info")]
+    public bool AttackPressedDown => _attackPressedDown;
+
+    #endregion Private Fields
+
+    #region Public Properties
+    public Vector3 MovementVector => _movementVector;
+
+    #endregion
+
+    #region Props Key Bindings
+
+    [Header("Movement Keys")]
+    public KeyCode Up = KeyCode.W;
+
+    public KeyCode Down = KeyCode.S;
+    public KeyCode Left = KeyCode.A;
+    public KeyCode Right = KeyCode.D;
+
+    [Header("Actions")]
+    public KeyCode Jump = KeyCode.Space;
+    public KeyCode Attack = KeyCode.Mouse0;
+
+    public KeyCode Run = KeyCode.LeftControl;
+
+    #endregion Props Key Bindings
+
+    [Header("Debug")]
     [SerializeField]
     [ReadOnlyProperty]
     private Vector3 _movementVector = new Vector3();
 
-    public Vector3 MovementVector => _movementVector;
+    [SerializeField]
+    [ReadOnlyProperty]
+    bool _attackPressed;
 
-    [Header("Debug")]
+    [SerializeField]
+    [ReadOnlyProperty]
+    bool _attackPressedDown;
+
     [SerializeField]
     [ReadOnlyProperty]
     private bool _upPressed;
@@ -107,6 +128,9 @@ public class PlayerInputManager : BaseBehaviour
         _runPressed = Input.GetKey(Run);
         _runPressedDown = Input.GetKeyDown(Run);
 
+        _attackPressed = Input.GetKey(Attack);
+        _attackPressedDown = Input.GetKeyDown(Attack);
+
         UpdateMovementVector();
 
         DebugLog("Up button pressed", _upPressedDown);
@@ -114,6 +138,8 @@ public class PlayerInputManager : BaseBehaviour
         DebugLog("Right button pressed", _rightPressedDown);
         DebugLog("Left button pressed", _leftPressedDown);
         DebugLog("Jump button pressed", _jumpPressedDown);
+        DebugLog("Attack button pressed", _attackPressedDown);
+        DebugLog("Run button pressed", _runPressedDown);
     }
 
     private void UpdateMovementVector()

@@ -16,7 +16,7 @@ public class UIStamina : BaseBehaviour
 
     private void Start()
     {
-        Assert.IsNotNull(_slider);
+        Assert.IsNotNull(Slider);
         Assert.IsNotNull(playerController);
     }
 

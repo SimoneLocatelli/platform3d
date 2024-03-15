@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -6,16 +7,21 @@ using UnityEngine.Assertions;
 [CustomPropertyDrawer(typeof(MinMaxRangeAttribute))]
 public class MinMaxRangeAttributeDrawer : PropertyDrawer
 {
-    float min = float.MinValue;
-    float max = float.MaxValue;
+    private static readonly string[] SupportedTypes = new[]
+    {
+        typeof(Vector2),
+        typeof(Vector2Int),
+    }
+    .Select(t => t.Name)
+    .ToArray();
 
+    private float max = float.MaxValue;
+    private float min = float.MinValue;
     private MinMaxRangeAttribute RangeAttribute => (MinMaxRangeAttribute)attribute;
-
-    private static readonly Type SupportedTypeName = typeof(Vector2);
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        Assert.IsTrue(property.type == SupportedTypeName.Name, $"Property '{property.name}' must be of type '{SupportedTypeName.FullName}', but actual type is '{property.type}'");
+        ValidateType(property);
         Assert.IsNotNull(RangeAttribute);
 
         // Log about incorrect configuration
@@ -24,19 +30,10 @@ public class MinMaxRangeAttributeDrawer : PropertyDrawer
         else if (RangeAttribute.min > RangeAttribute.max)
             Debug.LogWarning($"{nameof(MinMaxRangeAttributeDrawer)} - Property '{label}' - Min limit is equal to max limit");
 
-        
-
         // Get Current Values
-         min = property.vector2Value.x;
-         max = property.vector2Value.y;
-
-        if(property.vector2Value == Vector2.zero)
-        {
-            // Ensure values are in correct format (rounded and between valid ranges)
-           // min = RangeAttribute.min;
-           // max = RangeAttribute.max;
-        }
-
+        var vectorValue = GetCurrentValue(property);
+        min = vectorValue.x;
+        max = vectorValue.y;
 
         // Draw property label
         var labelPosition = new Rect(position.x, position.y, position.width, position.height);
@@ -53,7 +50,6 @@ public class MinMaxRangeAttributeDrawer : PropertyDrawer
         EditorGUI.MinMaxSlider(controlsRects[1], ref min, ref max, RangeAttribute.min, RangeAttribute.max);
         EditorGUI.FloatField(controlsRects[2], float.Parse(max.ToString("F2")));
 
-
         // Ensure values are in correct format (rounded and between valid ranges)
         min = Mathf.Clamp(Mathf.Round(min * 100) / 100, RangeAttribute.min, RangeAttribute.max);
         max = Mathf.Clamp(Mathf.Round(max * 100) / 100, RangeAttribute.min, RangeAttribute.max);
@@ -63,10 +59,9 @@ public class MinMaxRangeAttributeDrawer : PropertyDrawer
 
         if (EditorGUI.EndChangeCheck())
         {
-            var vector = property.vector2Value;
-            vector.x = min;
-            vector.y = max;
-            property.vector2Value = vector;
+            vectorValue.x = min;
+            vectorValue.y = max;
+            SetCurrentValue(property, vectorValue);
         }
     }
 
@@ -78,7 +73,7 @@ public class MinMaxRangeAttributeDrawer : PropertyDrawer
         var height = position.height;
         var offset = 10;
 
-       // Debug.Log("unitWidthSize: " + unitWidthSize);
+        // Debug.Log("unitWidthSize: " + unitWidthSize);
 
         var posLblMin = new Rect(x, y, unitWidthSize, height);
         var posSlider = new Rect(x + unitWidthSize + offset, y, unitWidthSize * 8 - offset * 2, height);
@@ -91,5 +86,26 @@ public class MinMaxRangeAttributeDrawer : PropertyDrawer
         };
 
         return rects;
+    }
+
+    private static Vector2 GetCurrentValue(SerializedProperty property)
+        => property.type == SupportedTypes[0] ? property.vector2Value : property.vector2IntValue;
+
+    private static void SetCurrentValue(SerializedProperty property, Vector2 vectorValue)
+    {
+        if (property.type == SupportedTypes[0])
+            property.vector2Value = vectorValue;
+        else
+            property.vector2IntValue = vectorValue.ToVector2Int();
+    }
+
+    [System.Diagnostics.Conditional("UNITY_ASSERTIONS")]
+    private void ValidateType(SerializedProperty property)
+    {
+        var isSupportedType = SupportedTypes.Contains(property.type);
+        if (isSupportedType)
+            return; // return as we don't want to create the assert message every single time, even in debug mode;
+
+        Assert.IsTrue(isSupportedType, $"Property '{property.name}' must be one of the supported types '{string.Join(',', SupportedTypes)}', but actual type is '{property.type}'");
     }
 }

@@ -96,6 +96,8 @@ public class AudioManager : BaseBehaviour
         return sound.source;
     }
 
+    public void PlayOnDestroySound()
+        => Play("OnDestroy");
 
     public bool IsPlaying()
     {
@@ -237,7 +239,7 @@ public class AudioManager : BaseBehaviour
                 if (!s.playOnceInEditMode)
                     s.source = null;
             }
-             
+
             var soundToPlay = Sounds.FirstOrDefault(s => s.playOnceInEditMode);
 
             if (soundToPlay == null)

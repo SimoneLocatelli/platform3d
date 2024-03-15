@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Multitags : MonoBehaviour
@@ -20,5 +21,9 @@ public class Multitags : MonoBehaviour
         return false;
     }
 
-    public bool Contains(string tag) => Tags.Contains(tag);
+    public bool Contains(string tag)
+        => Tags.Contains(tag);
+
+    public bool Contains(IEnumerable<string> tags)
+        => tags.All(t => Tags.Contains(t));
 }

@@ -1,15 +1,24 @@
 using System;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PlayerInputManager))]
 public partial class PlayerController : BaseBehaviour
 {
+    #region Attack Fields
+
+    [SerializeField]
+    private AttackCollider attackCollider;
+
+    #endregion Attack Fields
+
     #region Physics Fields
 
     [Header("Movement")]
-    [Range(1, 5)]
+    [Range(1, 20)]
     [SerializeField]
     private float speed = 5;
 
@@ -77,6 +86,8 @@ public partial class PlayerController : BaseBehaviour
     [SerializeField]
     private LayerMask groundLayer;
 
+    public List<LayerMask> groundLayers;
+
     #endregion Ground Check Fields
 
     #region Animations
@@ -86,7 +97,7 @@ public partial class PlayerController : BaseBehaviour
     private Animator _modelAnimator;
 
     [SerializeField]
-    private Transform Model;
+    private Transform model;
 
     #endregion Animations
 
@@ -108,6 +119,10 @@ public partial class PlayerController : BaseBehaviour
     [SerializeField]
     [ReadOnlyProperty]
     private bool isAttacking;
+
+    [SerializeField]
+    [ReadOnlyProperty]
+    private bool attackEnded = false;
 
     [SerializeField]
     [ReadOnlyProperty]
@@ -148,9 +163,19 @@ public partial class PlayerController : BaseBehaviour
     private PlayerInputManager PlayerInputManager
         => GetInitialisedComponent(ref _playerInputManager);
 
-    private PlayerAnimationEvents playerAnimationEvents;
+    private PlayerAnimationEvents _playerAnimationEvents;
 
-    public Vector3 ModelOrientation => Model.localEulerAngles;
+    private PlayerAnimationEvents PlayerAnimationEvents
+    {
+        get
+        {
+            _playerAnimationEvents ??= GetComponentInChildren<PlayerAnimationEvents>();
+            Assert.IsNotNull(_playerAnimationEvents);
+            return _playerAnimationEvents;
+        }
+    }
+
+    public Vector3 ModelOrientation => model.localEulerAngles;
 
     [SerializeField]
     [ReadOnlyProperty]
@@ -168,20 +193,21 @@ public partial class PlayerController : BaseBehaviour
 
     private void Start()
     {
-        var playerAnimationEvents = GetComponentInChildren<PlayerAnimationEvents>();
+        Assert.IsNotNull(model);
+        Assert.IsNotNull(attackCollider);
 
-        Assert.IsNotNull(playerAnimationEvents);
+        PlayerAnimationEvents.OnJumpAnimationReady += OnJumpAnimationReady;
+        PlayerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
+        PlayerAnimationEvents.OnAttackAnimationEnded += OnAttackAnimationEnded;
+        PlayerAnimationEvents.OnAttackAnimationSwoosh += OnAttackAnimationSwoosh;
 
-        playerAnimationEvents.OnJumpAnimationReady += OnJumpAnimationReady;
-        playerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
-        playerAnimationEvents.OnAttackAnimationEnded += OnAttackAnimationEnded;
-
+        attackCollider.OnDamageApplied += OnDamageApplied;
         currentStamina = staminaMax;
     }
 
     private void Update()
     {
-        Assert.IsNotNull(Model);
+        Assert.IsNotNull(model);
 
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
@@ -196,15 +222,58 @@ public partial class PlayerController : BaseBehaviour
 
     private void PerformAttack()
     {
-        isAttacking = isAttacking || PlayerInputManager.AttackPressedDown;
-
-        if (isAttacking)
+        // A previous attack (animation) has ended
+        if (attackEnded)
         {
-            float targetRotation = Mathf.Atan2(y: 0, x: 0) * Mathf.Rad2Deg + Camera.eulerAngles.y;
-            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, 0.01f);
+            DebugLog($"{nameof(PerformAttack)} - Handling attack ended");
+            // Ensure animation is not playing
+            PlayerAnimationEvents.ToggleAttackAnimation(false);
+
+            //
+            attackCollider.ToggleCollider(isAttacking);
+
+            // Let's make sure the flags are disabled
+            isAttacking = false;
+            attackEnded = false;
         }
 
-        Animator.SetBool("IsAttacking", isAttacking);
+        // Check if transition from non attack to attack
+        if (!isAttacking)
+        {
+            // Player isn't attacking, if attack is not pressed, then nothing else to do for now
+            if (!PlayerInputManager.AttackPressedDown)
+                return;
+
+            DebugLog($"{nameof(PerformAttack)} - Handling attack pressed");
+
+            // Player has pressed attack
+            isAttacking = true;
+
+            // Rotate Player
+            RotateTowardsCameraDirection();
+
+            // Start Attack Animation
+            PlayerAnimationEvents.ToggleAttackAnimation(true);
+
+        }
+        // Since we're here, attack is already in progress
+        else
+        {
+            DebugLog($"{nameof(PerformAttack)} - Handling attack in progress");
+
+            // Rotate Player
+            RotateTowardsCameraDirection();
+        }
+    }
+
+    /// <summary>
+    /// This rotates the player object so that it looks in the same direction as the camera.
+    /// Useful when we want to make the player look 'straight/forward' relative to the camera.
+    /// </summary>
+    private void RotateTowardsCameraDirection()
+    {
+        float targetRotation = Mathf.Atan2(y: 0, x: 0) * Mathf.Rad2Deg + Camera.eulerAngles.y;
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, 0.01f);
     }
 
     private void PerformMovement()
@@ -351,7 +420,17 @@ public partial class PlayerController : BaseBehaviour
 
     private void OnAttackAnimationEnded()
     {
+        DebugLogMethodEntry();
+        if (PlayerInputManager.AttackPressedDown)
+            return;
+        attackEnded = true;
         isAttacking = false;
+    }
+
+    private void OnAttackAnimationSwoosh()
+    {
+        AudioManager.Play("Sword_Woosh2");
+        attackCollider.ToggleCollider(isAttacking);
     }
 
     private void OnJumpAnimationReady()
@@ -372,4 +451,19 @@ public partial class PlayerController : BaseBehaviour
     }
 
     #endregion Animation Triggers
+
+    #region Attack Collider Event Handlers
+
+    private void OnDamageApplied(GameObject objectHit)
+    {
+        DebugLogMethodEntry();
+        Assert.IsNotNull(objectHit);
+
+        var isWoodObject = objectHit.HasAllTags(Tags.Collections.Object_Wood);
+
+        if (isWoodObject)
+            AudioManager.Play("Sword_Hit_Wood");
+    }
+
+    #endregion Attack Collider Event Handlers
 }

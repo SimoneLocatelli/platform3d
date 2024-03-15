@@ -88,6 +88,9 @@ public class CameraMouseControlled : BaseBehaviour
 
     private void UpdateCameraZoom()
     {
+        if (!mouseSystem.IsInsideGameScreen())
+            return;
+
         if (mouseSystem.IsZooming(out Vector2 mouseScrollDelta))
             radius -= mouseScrollDelta.y * zoomScale;
     }

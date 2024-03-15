@@ -976,13 +976,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1072185, y: 0, z: 0, w: 0.99423546}
-  m_LocalPosition: {x: 0, y: 2.95, z: -3.28}
+  m_LocalRotation: {x: 0.16813728, y: -0.44943622, z: 0.0865535, w: 0.8730667}
+  m_LocalPosition: {x: 9.2221, y: 9, z: -0.79649925}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 12.31, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 3, y: -261.887, z: 0}
 --- !u!114 &963194233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,13 +996,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EnableDebugLog: 0
-  radius: 5
-  sensitivity: 20
-  forceRefresh: 0
   target: {fileID: 1294019093}
+  forceRefresh: 1
+  mouseMovementXSensitivity: 20
+  zoom: 16
+  zoomSmoothSpeed: 5
+  zoomMouseWheelStep: 1
+  zoomRange: {x: 5, y: 16}
+  zoomYRange: {x: 3, y: 6}
+  Angle: -0.6199951
+  radius: 16
+  zoomFactor: 1
+  targetY: 9
+  isMouseInsideGameScreen: 0
   mouseAxis: {x: 0, y: 0}
-  isInsideGameScreen: 0
-  Angle: 1
 --- !u!1 &989297564
 GameObject:
   m_ObjectHideFlags: 0
@@ -2008,7 +2015,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7377685526864048944, guid: b3b914871e3481b4d9ea0da28e4f3459, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.2
+      value: -3.8000002
       objectReference: {fileID: 0}
     - target: {fileID: 7377685526864048944, guid: b3b914871e3481b4d9ea0da28e4f3459, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2016,7 +2023,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7377685526864048944, guid: b3b914871e3481b4d9ea0da28e4f3459, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 13.06
+      value: 8.5
       objectReference: {fileID: 0}
     - target: {fileID: 7377685526864048944, guid: b3b914871e3481b4d9ea0da28e4f3459, type: 3}
       propertyPath: m_LocalRotation.w

@@ -1,36 +1,75 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 using UnityEngine.Audio;
+using static AttributeExtensions;
 
 [System.Serializable]
 public class Sound
 {
-    public AudioClip clip;
-    public bool loop = false;
-    public AudioMixerGroup mixerGroup;
-    public string name;
+    #region Settings Fields
 
-    [Range(.1f, 3f)]
-    public float pitch;
+    [Header("Audio")]
+    [SerializeField]
+    [Tooltip("Sounds with the same name will be randomly selected to add variance.")]
+    private string name;
 
-    [Range(0f, 1f)]
-    public float pitchVariance;
+    [SerializeField]
+    private AudioClip clip;
 
-    [HideInInspector]
+    [ReadOnlyProperty]
     public AudioSource source;
 
-    [Range(0f, 1f)]
-    public float volume;
+    [SerializeField]
+    private AudioMixerGroup mixerGroup;
 
-    [Range(0f, 1f)]
-    public float volumeVariance;
+    [Header("Playback Settings")]
+    [SerializeField]
+    private bool enabled = true;
+
+    [SerializeField]
+    public bool playOnceInEditMode = false;
+
+    [SerializeField]
+    private bool loop = false;
+
+    [MinMaxRange(0.1f, 1f)]
+    [SerializeField]
+    private Vector2 volume = new Vector2(0.1f, 1f);
+
+    [MinMaxRange(0.1f, 3f)]
+    [SerializeField]
+    private Vector2 pitch = new Vector2(0.1f, 3f);
+
+    #endregion Settings Fields
+
+    #region Props
+
+    public string Name => name;
+
+    public bool Enabled => enabled;
+
+    public AudioClip Clip => clip;
+
+    public bool Loop => loop;
+
+    public float MinPitch => pitch.x;
+
+    public float MaxPitch => pitch.y;
+
+    public float MinVolume => volume.x;
+
+    public float MaxVolume => volume.y;
+
+    #endregion Props
 
     public Sound()
     {
-        pitch = 1f;
-        pitchVariance = .1f;
-        volume = 1f;
-        volumeVariance = .1f;
+        volume = GetRangeVector(nameof(volume));
+        pitch = GetRangeVector(nameof(pitch));
     }
+
+    private Vector2 GetRangeVector(string fieldName)
+        => this.GetAttribute<MinMaxRangeAttribute>(fieldName, MemberTypes.Field).ToVector2();
 
     internal Sound Clone()
     {
@@ -39,9 +78,16 @@ public class Sound
             name = this.name,
             clip = this.clip,
             pitch = this.pitch,
-            pitchVariance = this.pitchVariance,
             volume = this.volume,
-            volumeVariance = this.volumeVariance
         };
+    }
+
+    public void Update()
+    {
+        source.clip = Clip;
+        source.loop = Loop;
+        source.playOnAwake = false;
+        source.pitch = Random.Range(MinPitch, MaxPitch);
+        source.volume = Random.Range(MinVolume, MaxVolume);
     }
 }

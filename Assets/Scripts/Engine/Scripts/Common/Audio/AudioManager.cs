@@ -5,13 +5,20 @@ using UnityEngine.Assertions;
 using UnityEngine.Audio;
 
 [System.Serializable]
-public class AudioManager : MonoBehaviour
+[ExecuteAlways]
+public class AudioManager : BaseBehaviour
 {
     #region Properties
 
     public AudioMixerGroup mixerGroup;
 
     public List<Sound> Sounds;
+
+    private Sound soundBeingTestedInEditMode;
+
+    [SerializeField]
+    [Tooltip("Only available when not in Playing mode")]
+    private bool removeAllAudioSources;
 
     #endregion Properties
 
@@ -40,38 +47,74 @@ public class AudioManager : MonoBehaviour
 
     public AudioSource Play(string soundName, bool logIfMissingSound = true)
     {
-        var matchingSounds = Sounds.Where(c => c.name == soundName).ToList();
-        var matchingSoundsCount = (int)matchingSounds?.Count();
 
-        if (matchingSoundsCount < 1)
+        //  DebugLogMethodEntry($"soundName - [{soundName}]");
+        if (!Application.isPlaying)
         {
-            if (logIfMissingSound) Debug.LogWarning("Sound: " + soundName + " not found!");
+            Debug.LogError($"{nameof(AudioManager)} - {nameof(Play)} - Called when not in Unity Playing mode.");
+            DebugLogMethodExit($"soundName - [{soundName}]");
             return null;
         }
 
-        Sound sound;
-        if (matchingSoundsCount > 1)
+        Assert.IsNotNull(Sounds);
+        CustomAssert.IsNotEmpty(Sounds, nameof(Sounds));
+
+        // Retrieve sound clips with the same name as soundName
+        var matchingSounds = Sounds.Where(c => c.Enabled && c.Name == soundName).ToList();
+
+        if (!matchingSounds.Any())
         {
-            var audioIndex = Random.Range(0, matchingSoundsCount);
-            sound = matchingSounds[audioIndex];
+            if (logIfMissingSound)
+                Debug.LogWarning("Sound: " + soundName + " not found (or none is enabled)!");
+
+            DebugLogMethodExit($"soundName - [{soundName}]");
+            return null;
         }
-        else
-            sound = matchingSounds.FirstOrDefault();
+
+        // Pick the only sound found or select 1 randomly
+        var soundIndex = 0;
+
+        if (matchingSounds.Count > 1)
+            soundIndex = Random.Range(0, matchingSounds.Count);
+
+        Sound sound = matchingSounds[soundIndex];
 
         Assert.IsNotNull(sound);
 
+        // Configure audio source and Play sound
         if (sound.source == null)
             InitialiseSoundSource(sound);
 
-        sound.source.volume = sound.volume * (1f + Random.Range(-sound.volumeVariance / 2f, sound.volumeVariance / 2f));
-        sound.source.pitch = sound.pitch * (1f + Random.Range(-sound.pitchVariance / 2f, sound.pitchVariance / 2f));
+        sound.Update();
 
+        DebugLog($"Playing sound [{soundName} #{soundIndex}]");
         sound.source.Play();
+
+
+        //DebugLogMethodExit($"soundName - [{soundName}]");
 
         return sound.source;
     }
 
-    internal void Copy(AudioManager audioManager)
+
+    public bool IsPlaying()
+    {
+        if (Sounds == null || !Sounds.Any())
+            return false;
+
+        foreach (var s in Sounds)
+        {
+            if (s.source == null)
+                continue;
+
+            if (s.source.isPlaying)
+                return true;
+        }
+
+        return false;
+    }
+
+    public void Copy(AudioManager audioManager)
     {
         Assert.IsNotNull(audioManager);
 
@@ -96,6 +139,23 @@ public class AudioManager : MonoBehaviour
         Sounds.Clear();
     }
 
+    private void InitialiseSoundsArray()
+    {
+        Sounds ??= new List<Sound>
+        {
+            new Sound()
+        };
+    }
+
+    private void InitialiseSoundSource(Sound s)
+    {
+        if (s.source != null)
+            return;
+
+        s.source = gameObject.AddComponent<AudioSource>();
+        s.source.outputAudioMixerGroup = mixerGroup;
+    }
+
     #endregion Methods
 
     #region LifeCycle
@@ -108,23 +168,115 @@ public class AudioManager : MonoBehaviour
             InitialiseSoundSource(s);
     }
 
-    private void InitialiseSoundsArray()
+    private void Update()
     {
-        Sounds ??= new List<Sound>
+
+        if (!Application.isPlaying)
         {
-            new Sound()
-        };
+            if (removeAllAudioSources)
+            {
+                DoRemoveAllAudioSources();
+            }
+
+            PlaySoundInEditMode();
+        }
+        else
+        {
+            removeAllAudioSources = false;
+            RemoveAudioSourcesWithoutSoundClip();
+        }
     }
 
-    private void InitialiseSoundSource(Sound s)
+    private void DoRemoveAllAudioSources()
     {
-        s.source = gameObject.AddComponent<AudioSource>();
-        s.source.clip = s.clip;
-        s.source.loop = s.loop;
+        removeAllAudioSources = false;
 
-        s.source.playOnAwake = false;
+        if (soundBeingTestedInEditMode != null && soundBeingTestedInEditMode.source != null)
+            return;
 
-        s.source.outputAudioMixerGroup = mixerGroup;
+
+        var audioSources = GetComponents<AudioSource>();
+
+
+        if (audioSources == null)
+            return;
+
+        foreach (var a in audioSources)
+            a.RemoveComponentImmediate();
+
+    }
+
+    private void RemoveAudioSourcesWithoutSoundClip()
+    {
+        var audioSources = GetComponents<AudioSource>();
+
+
+        if (audioSources == null)
+            return;
+
+        foreach (var a in audioSources)
+        {
+            if (!a.isPlaying && a.clip == null)
+                a.RemoveComponentImmediate();
+        }
+    }
+
+    private void PlaySoundInEditMode()
+    {
+        if (soundBeingTestedInEditMode == null)
+        {
+
+            if (Sounds == null || !Sounds.Any())
+            {
+                DoRemoveAllAudioSources();
+                return;
+            }
+
+            foreach (var s in Sounds)
+            {
+                if (!s.playOnceInEditMode)
+                    s.source = null;
+            }
+             
+            var soundToPlay = Sounds.FirstOrDefault(s => s.playOnceInEditMode);
+
+            if (soundToPlay == null)
+            {
+                DoRemoveAllAudioSources();
+                return;
+            }
+            else
+            {
+                RemoveAudioSourcesWithoutSoundClip();
+            }
+
+            soundBeingTestedInEditMode = soundToPlay;
+            InitialiseSoundSource(soundBeingTestedInEditMode);
+        }
+        else
+        {
+
+            if (soundBeingTestedInEditMode.source == null)
+            {
+                DoRemoveAllAudioSources();
+                soundBeingTestedInEditMode = null;
+                return;
+            }
+
+            if (soundBeingTestedInEditMode.source.isPlaying)
+                return;
+
+            if (soundBeingTestedInEditMode.playOnceInEditMode)
+            {
+                soundBeingTestedInEditMode.Update();
+                soundBeingTestedInEditMode.source.loop = false;
+                soundBeingTestedInEditMode.source.Play();
+            }
+            else
+            {
+                soundBeingTestedInEditMode.source.RemoveComponentImmediate();
+            }
+        }
     }
 
     private void Reset()

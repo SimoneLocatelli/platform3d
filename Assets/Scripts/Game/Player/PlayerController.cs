@@ -203,6 +203,9 @@ public partial class PlayerController : BaseBehaviour
 
         attackCollider.OnDamageApplied += OnDamageApplied;
         currentStamina = staminaMax;
+     
+        if(Camera == null) 
+            Camera =  CameraBlackboard.Instance.CameraTransform;
     }
 
     private void Update()
@@ -214,6 +217,12 @@ public partial class PlayerController : BaseBehaviour
         direction = PlayerInputManager.MovementVector;
         PerformAttack();
         PerformMovement();
+    }
+
+    private void Reset()
+    {
+        if (Camera == null)
+            Camera = CameraBlackboard.Instance.CameraTransform;
     }
 
     #endregion Life Cycle
@@ -254,7 +263,6 @@ public partial class PlayerController : BaseBehaviour
 
             // Start Attack Animation
             PlayerAnimationEvents.ToggleAttackAnimation(true);
-
         }
         // Since we're here, attack is already in progress
         else

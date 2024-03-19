@@ -20,14 +20,14 @@ public class CameraMouseControlled : BaseBehaviour
     [SerializeField] private bool forceRefresh;
 
     [Header("Mouse Movement")]
-    
+
     [Range(1, 20)]
     [SerializeField] private float mouseMovementXSensitivity = 20;
 
     [Header("Zoom")]
     [Range(1, 30)]
     [SerializeField] private int zoom = 1;
-    
+
     [Range(1, 10)]
     [SerializeField] private float zoomSmoothSpeed = 5f;
 
@@ -36,7 +36,7 @@ public class CameraMouseControlled : BaseBehaviour
 
     [MinMaxRange(1, 30)]
     [SerializeField] private Vector2Int zoomRange;
- 
+
     [MinMaxRange(1, 10)]
     [SerializeField] private Vector2Int zoomYRange;
 
@@ -86,8 +86,14 @@ public class CameraMouseControlled : BaseBehaviour
 
     private void Start()
     {
+
         if (Application.isPlaying)
+        {
             Cursor.lockState = CursorLockMode.Locked;
+            if (target == null)
+                target = PlayerBlackboard.Instance.PlayerTransform;
+        }
+
     }
     #endregion Lifecycle
 
@@ -140,6 +146,12 @@ public class CameraMouseControlled : BaseBehaviour
                                           : targetY;
             transform.position = transform.position.Update(y: y);
         }
+    }
+
+    private void Reset()
+    {
+        if (target == null)
+            target = PlayerBlackboard.Instance.PlayerTransform;
     }
 
     #endregion Methods

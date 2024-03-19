@@ -4,12 +4,10 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public abstract class BaseBehaviour : MonoBehaviour
+public abstract class BaseBehaviour : BaseBehaviourLight
 {
     #region Properties
 
-    [Header("Logging", order = 10000)]
-    public bool EnableDebugLog = false;
     private Animator _animator;
     private AudioManager _audioManager;
     private Rigidbody2D _rb;
@@ -41,21 +39,17 @@ public abstract class BaseBehaviour : MonoBehaviour
 
     #endregion Properties
 
-    #region Methods
-
-    public static TComponent GetInitialisedComponent<TComponent>(Behaviour behaviour, ref TComponent innerReference) where TComponent : Component
-    {
-        if (innerReference == null)
-            innerReference = behaviour.GetComponent<TComponent>();
-
-        return innerReference;
-    }
+    #region Methods - GetCollidersInRange
 
     public Collider2D[] GetCollidersInRange(float radius)
         => Physics2D.OverlapCircleAll(transform.position, radius);
 
     public Collider2D[] GetCollidersInRange(float radius, int layerMask)
         => Physics2D.OverlapCircleAll(transform.position, radius, layerMask);
+
+    #endregion Methods - GetCollidersInRange
+
+    #region Methods - GetComponentsInRange
 
     public TComponent[] GetComponentsInRange<TComponent>(float radius) where TComponent : MonoBehaviour
     {
@@ -64,6 +58,10 @@ public abstract class BaseBehaviour : MonoBehaviour
         var components = colliders.SelectGameObjects().Select(c => c.GetComponent<TComponent>());
         return components.Where(c => c != null).ToArray();
     }
+
+    #endregion Methods - GetComponentsInRange
+
+    #region Methods - IsInRange
 
     public bool IsInRange(GameObject obj, float range)
     {
@@ -83,6 +81,10 @@ public abstract class BaseBehaviour : MonoBehaviour
 
     public bool IsInRange(Vector3 position, float radius) => transform.position.IsInRange(position, radius);
 
+    #endregion Methods - IsInRange
+
+    #region Methods - IsOutsideRange
+
     public bool IsOutsideRange(GameObject obj, float radius)
     {
         if (obj == null)
@@ -93,33 +95,19 @@ public abstract class BaseBehaviour : MonoBehaviour
 
     public bool IsOutsideRange(Vector3 position, float attackRange) => transform.position.IsOutsideRange(position, attackRange);
 
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough, Conditional("DEBUG")]
-    protected void DebugLog(object message, bool condition = true)
-        => DebugLog(message, 0, condition);
+    #endregion Methods - IsOutsideRange
 
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough, Conditional("DEBUG")]
-    protected void DebugLog(object message, int indentationSpaces, bool condition = true)
-    {
-        if (!EnableDebugLog || !condition)
-            return;
-
-        var spaces = new string(' ', indentationSpaces);
-        UnityEngine.Debug.Log($"{spaces}{GetType().FullName} - {message}", this);
-    }
-
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough, Conditional("DEBUG")]
-    protected void DebugLogMethodEntry([CallerMemberName] string message = null)
-        => DebugLog($"Entry Method - {message}");
-
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough, Conditional("DEBUG")]
-    protected void DebugLogMethodExit([CallerMemberName] string message = null)
-        => DebugLog($"Entry Method - {message}");
+    #region Methods - DisableCollider
 
     protected void Destroy()
         => Destroy(gameObject);
 
     protected void DestroyTopParent()
         => Destroy(TopParent);
+
+    #endregion Methods - DisableCollider
+
+    #region Methods - Destroy
 
     protected void DisableCollider()
     {
@@ -128,20 +116,5 @@ public abstract class BaseBehaviour : MonoBehaviour
             c.enabled = false;
     }
 
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough]
-    protected TComponent GetInitialisedComponent<TComponent>(ref TComponent innerReference) where TComponent : Component
-        => innerReference ?? (innerReference = GetInitialisedComponent<TComponent>());
-
-    [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough]
-    protected TComponent GetInitialisedComponent<TComponent>() where TComponent : Component
-    {
-        var component = GetComponent<TComponent>();
-
-        Assert.IsNotNull(component, $"Couldn't find component {typeof(TComponent).FullName} on object {gameObject.name}");
-
-        return component;
-    }
-
-
-    #endregion Methods
+    #endregion Methods - Destroy
 }

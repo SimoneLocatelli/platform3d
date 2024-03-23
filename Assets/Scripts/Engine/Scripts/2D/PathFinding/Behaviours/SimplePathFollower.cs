@@ -7,7 +7,7 @@
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PathUpdater))]
-public class SimplePathFollower : BaseBehaviour
+public class SimplePathFollower : BaseBehaviour2D
 {
     #region Properties
 

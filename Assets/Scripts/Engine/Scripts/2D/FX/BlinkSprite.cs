@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class BlinkSprite : BaseBehaviour
+public class BlinkSprite : BaseBehaviour2D
 {
     private Action _onFinishedBlinking;
     private bool _useDefaultDuration;

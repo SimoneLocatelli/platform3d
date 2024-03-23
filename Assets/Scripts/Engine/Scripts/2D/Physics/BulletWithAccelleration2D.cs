@@ -14,11 +14,10 @@ public class BulletWithAccelleration2D : Bullet2D
     private bool _isDecellerating;
 
     public float TimeToReachMaxSpeed = 1;
+
     #endregion Properties
 
-
     #region LifeCycle
-
 
     protected override void Update()
     {

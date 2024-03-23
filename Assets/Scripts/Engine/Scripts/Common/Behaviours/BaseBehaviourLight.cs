@@ -14,6 +14,18 @@ public abstract class BaseBehaviourLight : MonoBehaviour
     [Header("Logging", order = 10000)]
     public bool EnableDebugLog = false;
 
+    public GameObject ParentGameObject
+    {
+        get
+        {
+            var parent = transform.parent;
+            if (parent == null) return null;
+            return parent.gameObject;
+        }
+    }
+
+    public GameObject TopParent { get => gameObject.GetTopParent(); }
+
     #endregion Properties
 
     #region Methods - GetInitialisedComponent

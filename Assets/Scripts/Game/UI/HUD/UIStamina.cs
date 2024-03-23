@@ -6,10 +6,9 @@ using UnityEngine.UI;
 
 public class UIStamina : BaseBehaviour
 {
-
     private UnityEngine.UI.Slider _slider;
 
-    UnityEngine.UI.Slider Slider => GetInitialisedComponent(ref _slider);
+    private UnityEngine.UI.Slider Slider => GetInitialisedComponent(ref _slider);
 
     [SerializeField]
     private PlayerController playerController;
@@ -22,6 +21,6 @@ public class UIStamina : BaseBehaviour
 
     private void Update()
     {
-        Slider.value = playerController.StaminaPercentage;
+        Slider.value = Blackboards.Instance.PlayerBlackboard.StaminaPercentage;
     }
 }

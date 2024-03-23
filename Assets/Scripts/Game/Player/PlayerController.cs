@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PlayerInputManager))]
 public partial class PlayerController : BaseBehaviour
 {
     #region Attack Fields
 
-    [SerializeField]
-    private AttackCollider attackCollider;
+    [SerializeField] private AttackCollider attackCollider;
 
     #endregion Attack Fields
 
@@ -23,55 +20,54 @@ public partial class PlayerController : BaseBehaviour
     private float speed = 5;
 
     [Range(1, 10)]
-    [SerializeField]
-    private float runSpeed = 5;
+    [SerializeField] private float runSpeed = 5;
 
-    [SerializeField]
-    private float jumpForce = 20;
+    [SerializeField] private float jumpForce = 20;
 
     [Range(0, 20)]
-    [SerializeField]
-    private float gravity = 9.81f;
+    [SerializeField] private float gravity = 9.81f;
 
     [Range(0, 20)]
-    [SerializeField]
-    private float gravityScale = 5;
+    [SerializeField] private float gravityScale = 5;
 
-    [SerializeField]
     [Range(0.01f, 10f)]
-    private float turnSmoothTime = 0.2f;
+    [SerializeField] private float turnSmoothTime = 0.2f;
 
-    [SerializeField]
     [ReadOnlyProperty]
-    private float turnSmoothVelocity;
+    [SerializeField] private float turnSmoothVelocity;
 
-    [SerializeField]
     [Range(0.01f, 10f)]
-    private float speedSmoothTime = 0.1f;
+    [SerializeField] private float speedSmoothTime = 0.1f;
 
-    [SerializeField]
     [ReadOnlyProperty]
-    private float speedSmoothVelocity;
+    [SerializeField] private float speedSmoothVelocity;
 
-    [SerializeField]
     [Range(0.3f, 5)]
-    private float runAnimationAccelleration = 2f;
+    [SerializeField] private float runAnimationAccelleration = 2f;
 
-    [SerializeField]
     [ReadOnlyProperty]
-    private float currentSpeed;
+    [SerializeField] private float currentSpeed;
 
-    [SerializeField]
     [Range(10, 300)]
-    private float staminaMax = 100;
+    [SerializeField] private float staminaMax = 100;
 
-    [SerializeField]
     [Range(0.1f, 100)]
-    private float staminaDepletionSpeed = 1;
+    [SerializeField] private float staminaDepletionSpeed = 1;
 
-    [SerializeField]
+    [Range(0.1f, 100)]
+    [SerializeField] private float staminaRecoverySpeed = 1;
+
+    [Range(0.5f, 5f)]
+    [SerializeField] private float timeToStartStaminaRecovery = 0;
+
+    [Range(0.5f, 10)]
+    [SerializeField] private float runMinStaminaThreshold = 2;
+
     [ReadOnlyProperty]
-    private float currentStamina;
+    [SerializeField] private float timeSinceStartedRunning = 0;
+
+    [ReadOnlyProperty]
+    [SerializeField] private float currentStamina;
 
     public float StaminaPercentage => currentStamina / staminaMax;
 
@@ -213,12 +209,6 @@ public partial class PlayerController : BaseBehaviour
     private void Update()
     {
         Assert.IsNotNull(model);
-        if (Input.GetKeyDown(KeyCode.O))
-            GetComponent<LifeSystem>().ApplyDamage(Damage);
-        else if (Input.GetKeyDown(KeyCode.P))
-            GetComponent<LifeSystem>().Heal(Damage);
-
-
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
         direction = PlayerInputManager.MovementVector;
@@ -341,7 +331,9 @@ public partial class PlayerController : BaseBehaviour
 
         var movementVector = new Vector3(x, 0, z);
         isWalking = !isJumping && currentMovement != Vector3.zero;
-        isRunning = isWalking && PlayerInputManager.RunPressed;
+
+        // Player can't start running if does not have enough stamina
+        UpdateRunningState();
 
         float targetSpeed = speed + (isRunning ? runSpeed : 0); //* movementVector.magnitude;
         if (movementVector != Vector3.zero)
@@ -378,19 +370,7 @@ public partial class PlayerController : BaseBehaviour
 
         // Stamina update
 
-        if (isWalking)
-        {
-            if (isRunning)
-                currentStamina -= staminaDepletionSpeed * Time.deltaTime;
-            else
-                currentStamina += staminaDepletionSpeed / 2 * Time.deltaTime;
-        }
-        else if (!isJumping)
-        {
-            currentStamina += staminaDepletionSpeed * Time.deltaTime;
-        }
-
-        currentStamina = Mathf.Clamp(currentStamina, 0, staminaMax);
+        UpdateStamina();
 
         // Animation update
         Animator.SetBool("IsJumping", isJumping);
@@ -402,6 +382,61 @@ public partial class PlayerController : BaseBehaviour
         Animator.SetFloat("RunAnimSpeed", runAnimationSpeed);
 
         LastMovementVector = movementVector;
+    }
+
+    private void UpdateRunningState()
+    {
+        if (isRunning)
+            // Player is already running so we need to check if they continue to do so
+            isRunning = isWalking && PlayerInputManager.RunPressed && currentStamina > 0;
+        else
+            isRunning = isWalking && PlayerInputManager.RunPressedDown && currentStamina >= runMinStaminaThreshold;
+
+        if (isRunning)
+            timeSinceStartedRunning = 0;
+    }
+
+    private void UpdateStamina()
+    {
+        float staminaFactor;
+
+
+        if (isJumping || isAttacking)
+            // No change to stamina when jumping or attacking
+            staminaFactor = 0;
+        else if (isRunning)
+            // Full depletion speed when running 
+            staminaFactor = -staminaDepletionSpeed;
+        else if (isWalking)
+            // Half depletion speed when walking 
+            staminaFactor = staminaRecoverySpeed / 2;
+        else
+            // Full recovery speed if player is not performing actions
+            staminaFactor = staminaRecoverySpeed;
+
+        var isPlayerRecovering = staminaFactor > 0;
+
+        if (isPlayerRecovering)
+        {
+            // Full stamina - so no recovery
+            if (currentStamina == staminaMax)
+                staminaFactor = 0;
+
+            // If not enough time has passed since player stopped running, then no recovery at all
+            if (timeSinceStartedRunning < timeToStartStaminaRecovery)
+            {
+                timeSinceStartedRunning += Time.deltaTime;
+                staminaFactor = 0;
+            }
+        }
+
+        // No recovery - no update needed
+        if (staminaFactor == 0)
+            return;
+
+        currentStamina += staminaFactor * Time.deltaTime;
+        currentStamina = Mathf.Clamp(currentStamina, 0, staminaMax);
+        currentStamina = FloatRounding.Round(currentStamina, 2);
     }
 
     private float CalculateRotation(float currentRotation)

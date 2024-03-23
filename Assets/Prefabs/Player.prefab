@@ -103,7 +103,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7377685526864048944}
-  - component: {fileID: 2573427643510279618}
   - component: {fileID: 893561591008442907}
   - component: {fileID: 1397918173275887418}
   - component: {fileID: 4034712372846158848}
@@ -136,14 +135,6 @@ Transform:
   - {fileID: 8818012851795455353}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2573427643510279618
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5896035352910956843}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!136 &893561591008442907
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -282,7 +273,11 @@ MonoBehaviour:
   runAnimationAccelleration: 2
   currentSpeed: 0
   staminaMax: 100
-  staminaDepletionSpeed: 20
+  staminaDepletionSpeed: 15
+  staminaRecoverySpeed: 25
+  timeToStartStaminaRecovery: 2
+  runMinStaminaThreshold: 1
+  timeSinceStartedRunning: 0
   currentStamina: 0
   groundCheck: {fileID: 9026431984822254146}
   groundLayer:

@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
@@ -10,13 +7,9 @@ public class UIStamina : BaseBehaviour
 
     private UnityEngine.UI.Slider Slider => GetInitialisedComponent(ref _slider);
 
-    [SerializeField]
-    private PlayerController playerController;
-
     private void Start()
     {
         Assert.IsNotNull(Slider);
-        Assert.IsNotNull(playerController);
     }
 
     private void Update()

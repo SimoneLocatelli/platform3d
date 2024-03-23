@@ -91,7 +91,7 @@ public class CameraMouseControlled : BaseBehaviour
         {
             Cursor.lockState = CursorLockMode.Locked;
             if (target == null)
-                target = PlayerBlackboard.Instance.PlayerTransform;
+                target = Blackboards.Instance. PlayerBlackboard.PlayerTransform;
         }
 
     }
@@ -151,7 +151,7 @@ public class CameraMouseControlled : BaseBehaviour
     private void Reset()
     {
         if (target == null)
-            target = PlayerBlackboard.Instance.PlayerTransform;
+            target = Blackboards.Instance.PlayerBlackboard.PlayerTransform;
     }
 
     #endregion Methods

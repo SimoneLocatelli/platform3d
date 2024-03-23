@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Bullet2D : BaseBehaviour
+public class Bullet2D : BaseBehaviour2D
 {
     #region Properties
 

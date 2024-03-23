@@ -21,6 +21,8 @@ public class PlayerInputManager : BaseBehaviour
 
     public bool RunPressed => _runPressed;
 
+    public bool RunPressedDown => _runPressedDown;
+
     public bool AttackPressedDown => _attackPressedDown;
 
     #endregion Private Fields

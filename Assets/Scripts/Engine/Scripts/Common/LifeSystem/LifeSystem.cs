@@ -1,60 +1,116 @@
 ﻿using System;
 using UnityEngine;
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class LifeSystem : BaseBehaviour
 {
-    #region Props
+    #region Props - Settings
+
+    [Header("Settings")]
+    [SerializeField] private int _life;
+
+    public int Life
+    {
+        get => _life;
+        private set
+        {
+            _life = value;
+            LifePercentage = CalculateLifePercentage();
+        }
+    }
+
+    public int MaxLife = 10;
 
     public bool DestroyWhenDead = true;
 
     [Range(0, 3)]
     public float InvulnerabilityDuration = 1f;
 
-    public delegate void OnDeathEventHandler(LifeSystem lifeSystem);
-
-    public delegate void OnDamageReceivedEventHandler(LifeSystem lifeSystem);
+    [SerializeField]
+    private float life;
 
     public bool InvulnerabilityManualControl = false;
+
+    [Header("Invulnerability")]
     public bool IsInvulnerable;
-    public int Life;
-    public int MaxLife = 10;
-
-    public event OnDeathEventHandler OnDeath;
-
-    public event OnDamageReceivedEventHandler OnDamageReceived;
 
     public bool TemporarilyInvulnerableAfterDamage;
-    private bool initialised;
+
+
     private TimerCooldown InvulnerabilityTimer;
 
     public bool IsDead { get => Life < 1; }
 
-    public float LifePercentage { get => ((float)Life) / MaxLife; }
 
-    public static void ApplyDamageToObject(GameObject obj, int damage)
-    {
-        var lifeSystem = obj.GetComponentInChildren<LifeSystem>();
-        if (lifeSystem != null) lifeSystem.ApplyDamage(damage);
-    }
+    #endregion Props - Settings
+
+    #region Props - On Death
 
     [Header("On Death")]
-    [SerializeField]
-    private bool disableAllColliders = true;
+    [SerializeField] private bool disableAllColliders = true;
 
-    private bool disableAllMeshRenders = true;
+    [SerializeField] private bool disableAllMeshRenders = true;
 
-    public bool CanDestroy => DestroyWhenDead && !AudioManager.IsPlaying();
+    [Header("Info")]
+    [ReadOnlyProperty]
+    [SerializeField] private bool initialised;
+
+
+    [ReadOnlyProperty]
+    [SerializeField] private float _lifePercentage;
+
+    public bool PlayDestroyedSound = false;
+
+    public float LifePercentage
+    {
+        get => _lifePercentage;
+        private set => _lifePercentage = value;
+    }
+
+    #endregion Props - On Death
+
+    #region Props
+
+    public bool CanDestroy => DestroyWhenDead && (!PlayDestroyedSound || !AudioManager.IsPlaying());
 
     #endregion Props
+
+    #region Events
+
+    #region OnDeath
+
+    public event OnDeathEventHandler OnDeath;
+
+    public delegate void OnDeathEventHandler(LifeSystem lifeSystem);
+
+    #endregion OnDeath
+
+    #region OnHealed
+
+    public event OnHealedEventHandler OnHealed;
+
+    public delegate void OnHealedEventHandler(LifeSystem lifeSystem);
+
+    #endregion OnHealed
+
+    #region OnDamage
+
+    public event OnDamageReceivedEventHandler OnDamageReceived;
+
+    public delegate void OnDamageReceivedEventHandler(LifeSystem lifeSystem);
+
+    #endregion OnDamage
+
+    #endregion Events
 
     #region Life Cycle
 
     private void Awake()
     {
+        LifePercentage = CalculateLifePercentage();
         if (initialised) return;
 
-        Life = MaxLife;
+        Heal(MaxLife);
         initialised = true;
     }
 
@@ -106,6 +162,20 @@ public class LifeSystem : BaseBehaviour
         ResetInvulnerabilityTimer();
     }
 
+    public void Heal(int healedHP)
+    {
+        CustomAssert.IsNotNegative(healedHP, nameof(healedHP));
+
+        var life = Life + healedHP;
+        life = life > MaxLife ? MaxLife : life;
+
+        if (life == Life)
+            return;
+
+        Life = life;
+        OnHealed?.Invoke(this);
+    }
+
     private void HandleInvulnerabilityDuration()
     {
         if (InvulnerabilityTimer.IsReady)
@@ -145,6 +215,15 @@ public class LifeSystem : BaseBehaviour
         else
             InvulnerabilityTimer.Reset(InvulnerabilityDuration);
     }
+
+    private float CalculateLifePercentage()
+    {
+        float fLife = Life;
+        fLife = fLife / MaxLife;
+        fLife = FloatRounding.Round(fLife, 2);
+        return fLife;
+    }
+
 
     #endregion Methods
 }

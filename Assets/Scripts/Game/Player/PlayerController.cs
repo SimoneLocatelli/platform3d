@@ -203,14 +203,21 @@ public partial class PlayerController : BaseBehaviour
 
         attackCollider.OnDamageApplied += OnDamageApplied;
         currentStamina = staminaMax;
-     
-        if(Camera == null) 
-            Camera =  CameraBlackboard.Instance.CameraTransform;
+
+        if (Camera == null)
+            Camera = Blackboards.Instance.CameraBlackboard.CameraTransform;
     }
+
+    public int Damage = 70;
 
     private void Update()
     {
         Assert.IsNotNull(model);
+        if (Input.GetKeyDown(KeyCode.O))
+            GetComponent<LifeSystem>().ApplyDamage(Damage);
+        else if (Input.GetKeyDown(KeyCode.P))
+            GetComponent<LifeSystem>().Heal(Damage);
+
 
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
@@ -222,7 +229,7 @@ public partial class PlayerController : BaseBehaviour
     private void Reset()
     {
         if (Camera == null)
-            Camera = CameraBlackboard.Instance.CameraTransform;
+            Camera = Blackboards.Instance.CameraBlackboard.CameraTransform;
     }
 
     #endregion Life Cycle

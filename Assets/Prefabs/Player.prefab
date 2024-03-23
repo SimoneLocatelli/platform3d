@@ -104,17 +104,18 @@ GameObject:
   m_Component:
   - component: {fileID: 7377685526864048944}
   - component: {fileID: 2573427643510279618}
-  - component: {fileID: 5972953505092125902}
   - component: {fileID: 893561591008442907}
   - component: {fileID: 1397918173275887418}
   - component: {fileID: 4034712372846158848}
   - component: {fileID: 1918862609522326217}
   - component: {fileID: 3679436471648450556}
   - component: {fileID: 7624939348276976433}
+  - component: {fileID: 8844511823186546469}
+  - component: {fileID: 8589589413775799493}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -143,48 +144,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5896035352910956843}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &5972953505092125902
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5896035352910956843}
-  m_Enabled: 0
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!136 &893561591008442907
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -347,6 +306,7 @@ MonoBehaviour:
   _modelOrientation: {x: 0, y: 0, z: 0}
   _modelOrientationNormalised: {x: 0, y: 0, z: 0}
   Camera: {fileID: 0}
+  Damage: 56
 --- !u!114 &7624939348276976433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,6 +350,55 @@ MonoBehaviour:
     volume: {x: 0.74, y: 1}
     pitch: {x: 0.81, y: 0.89}
   removeAllAudioSources: 0
+--- !u!114 &8844511823186546469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5896035352910956843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d6d841498cf9f84d9a8c5e895784d12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EnableDebugLog: 0
+  _life: 500
+  MaxLife: 500
+  DestroyWhenDead: 0
+  InvulnerabilityDuration: 1
+  life: 0
+  InvulnerabilityManualControl: 0
+  IsInvulnerable: 0
+  TemporarilyInvulnerableAfterDamage: 0
+  disableAllColliders: 0
+  disableAllMeshRenders: 1
+  initialised: 1
+  _lifePercentage: 0
+  PlayDestroyedSound: 0
+--- !u!114 &8589589413775799493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5896035352910956843}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ddf6144bf0b45f43a4e9bd250d3949d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Animator: {fileID: 5957360594403923925}
+  isInitialized: 0
+  fireEvents: 0
+  isInTransition: 0
+  layerIndex: 0
+  layerName: 
+  currentNormalizedTime: 0
+  currentNormalizedTimePercentage: 0
+  currentClipLength: 0
+  currentClipName: 
+  currentClipEvents: []
 --- !u!1 &6208845473844978423
 GameObject:
   m_ObjectHideFlags: 0

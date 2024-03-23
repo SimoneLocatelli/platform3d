@@ -45,15 +45,15 @@ public class AudioManager : BaseBehaviour
             Sounds.Add(s.Clone());
     }
 
-    public AudioSource Play(string soundName, bool logIfMissingSound = true)
+    public void Play(string soundName, bool logIfMissingSound = true, bool playAllMatchingSounds = false)
     {
+        DebugLogMethodEntry($"soundName - [{soundName}]");
 
-        //  DebugLogMethodEntry($"soundName - [{soundName}]");
         if (!Application.isPlaying)
         {
             Debug.LogError($"{nameof(AudioManager)} - {nameof(Play)} - Called when not in Unity Playing mode.");
             DebugLogMethodExit($"soundName - [{soundName}]");
-            return null;
+            return;
         }
 
         Assert.IsNotNull(Sounds);
@@ -68,36 +68,48 @@ public class AudioManager : BaseBehaviour
                 Debug.LogWarning("Sound: " + soundName + " not found (or none is enabled)!");
 
             DebugLogMethodExit($"soundName - [{soundName}]");
-            return null;
+            return;
         }
 
-        // Pick the only sound found or select 1 randomly
-        var soundIndex = 0;
+        if (playAllMatchingSounds)
+        {
+            foreach (var sound in matchingSounds)
+            {
+                DebugLog($"Playing sound [{soundName}]");
+                Play(sound);
+            }
+        }
+        else
+        {
+            // Pick the only sound found or select 1 randomly
+            var soundIndex = 0;
 
-        if (matchingSounds.Count > 1)
-            soundIndex = Random.Range(0, matchingSounds.Count);
+            if (matchingSounds.Count > 1)
+                soundIndex = Random.Range(0, matchingSounds.Count);
 
-        Sound sound = matchingSounds[soundIndex];
+            Sound sound = matchingSounds[soundIndex];
 
+            DebugLog($"Playing sound [{soundName} #{soundIndex}]");
+
+            Play(sound);
+        }
+
+        DebugLogMethodExit($"soundName - [{soundName}]");
+    }
+
+    private void Play(Sound sound)
+    {
         Assert.IsNotNull(sound);
-
-        // Configure audio source and Play sound
         if (sound.source == null)
             InitialiseSoundSource(sound);
 
         sound.Update();
 
-        DebugLog($"Playing sound [{soundName} #{soundIndex}]");
         sound.source.Play();
-
-
-        //DebugLogMethodExit($"soundName - [{soundName}]");
-
-        return sound.source;
     }
 
-    public void PlayOnDestroySound()
-        => Play("OnDestroy");
+    public void PlayOnDestroySounds()
+        => Play("OnDestroy", playAllMatchingSounds: true);
 
     public bool IsPlaying()
     {
@@ -172,7 +184,6 @@ public class AudioManager : BaseBehaviour
 
     private void Update()
     {
-
         if (!Application.isPlaying)
         {
             if (removeAllAudioSources)
@@ -196,22 +207,18 @@ public class AudioManager : BaseBehaviour
         if (soundBeingTestedInEditMode != null && soundBeingTestedInEditMode.source != null)
             return;
 
-
         var audioSources = GetComponents<AudioSource>();
-
 
         if (audioSources == null)
             return;
 
         foreach (var a in audioSources)
             a.RemoveComponentImmediate();
-
     }
 
     private void RemoveAudioSourcesWithoutSoundClip()
     {
         var audioSources = GetComponents<AudioSource>();
-
 
         if (audioSources == null)
             return;
@@ -227,7 +234,6 @@ public class AudioManager : BaseBehaviour
     {
         if (soundBeingTestedInEditMode == null)
         {
-
             if (Sounds == null || !Sounds.Any())
             {
                 DoRemoveAllAudioSources();
@@ -257,7 +263,6 @@ public class AudioManager : BaseBehaviour
         }
         else
         {
-
             if (soundBeingTestedInEditMode.source == null)
             {
                 DoRemoveAllAudioSources();

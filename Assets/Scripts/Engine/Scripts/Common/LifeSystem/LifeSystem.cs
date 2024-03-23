@@ -6,7 +6,7 @@ public class LifeSystem : BaseBehaviour
 {
     #region Props - Settings
 
-    [Header("Settings")]
+    [Header("Life")]
     [SerializeField] private int _life;
 
     public int Life
@@ -21,40 +21,36 @@ public class LifeSystem : BaseBehaviour
 
     public int MaxLife = 10;
 
-    public bool DestroyWhenDead = true;
-
-    [Range(0, 3)]
-    public float InvulnerabilityDuration = 1f;
-
-    [SerializeField]
-    private float life;
-
-    public bool InvulnerabilityManualControl = false;
+    public bool MaxLifeAtStart = true;
 
     [Header("Invulnerability")]
     public bool IsInvulnerable;
 
-    public bool TemporarilyInvulnerableAfterDamage;
+    [Range(0, 3)]
+    public float InvulnerabilityDuration = 1f;
 
+    public bool TemporarilyInvulnerableAfterDamage;
 
     private TimerCooldown InvulnerabilityTimer;
 
-    public bool IsDead { get => Life < 1; }
+    public bool InvulnerabilityManualControl = false;
 
+    public bool IsDead { get => Life < 1; }
 
     #endregion Props - Settings
 
     #region Props - On Death
 
     [Header("On Death")]
+    [SerializeField] private bool DestroyWhenDead = true;
+
     [SerializeField] private bool disableAllColliders = true;
 
-    [SerializeField] private bool disableAllMeshRenders = true;
+    [SerializeField] private bool disableAllMeshRenderers = true;
 
     [Header("Info")]
     [ReadOnlyProperty]
     [SerializeField] private bool initialised;
-
 
     [ReadOnlyProperty]
     [SerializeField] private float _lifePercentage;
@@ -71,7 +67,8 @@ public class LifeSystem : BaseBehaviour
 
     #region Props
 
-    public bool CanDestroy => DestroyWhenDead && (!PlayDestroyedSound || !AudioManager.IsPlaying());
+    public bool CanDestroy
+        => DestroyWhenDead && (!PlayDestroyedSound || !AudioManager.IsPlaying());
 
     #endregion Props
 
@@ -110,7 +107,9 @@ public class LifeSystem : BaseBehaviour
         LifePercentage = CalculateLifePercentage();
         if (initialised) return;
 
-        Heal(MaxLife);
+        if (MaxLifeAtStart)
+            Heal(MaxLife, true);
+
         initialised = true;
     }
 
@@ -162,9 +161,20 @@ public class LifeSystem : BaseBehaviour
         ResetInvulnerabilityTimer();
     }
 
-    public void Heal(int healedHP)
+    public void Heal(int healedHP, bool canResurrect)
     {
+
         CustomAssert.IsNotNegative(healedHP, nameof(healedHP));
+
+        if (canResurrect && IsDead)
+        {
+            DebugLog("Resurrecting game object [" + gameObject.name + "]");
+        }
+        else
+        {
+            DebugLog("Game object  [" + gameObject.name + "] is dead and cannot be resurrected. Healing skipped");
+            return;
+        }
 
         var life = Life + healedHP;
         life = life > MaxLife ? MaxLife : life;
@@ -197,15 +207,20 @@ public class LifeSystem : BaseBehaviour
                 c.enabled = false;
         }
 
-        if (disableAllMeshRenders)
+        if (disableAllMeshRenderers)
         {
-            var meshRenderer = GetComponents<MeshRenderer>();
+            var meshRenderers = GetComponents<MeshRenderer>();
 
-            foreach (var m in meshRenderer)
+            foreach (var m in meshRenderers)
+                m.enabled = false;
+
+            meshRenderers = GetComponentsInChildren<MeshRenderer>();
+
+            foreach (var m in meshRenderers)
                 m.enabled = false;
         }
 
-        AudioManager.PlayOnDestroySound();
+        AudioManager.PlayOnDestroySounds();
     }
 
     private void ResetInvulnerabilityTimer()
@@ -223,7 +238,6 @@ public class LifeSystem : BaseBehaviour
         fLife = FloatRounding.Round(fLife, 2);
         return fLife;
     }
-
 
     #endregion Methods
 }

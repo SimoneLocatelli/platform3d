@@ -82,8 +82,6 @@ public partial class PlayerController : BaseBehaviour
     [SerializeField]
     private LayerMask groundLayer;
 
-    public List<LayerMask> groundLayers;
-
     #endregion Ground Check Fields
 
     #region Animations
@@ -509,10 +507,12 @@ public partial class PlayerController : BaseBehaviour
         DebugLogMethodEntry();
         Assert.IsNotNull(objectHit);
 
-        var isWoodObject = objectHit.HasAllTags(Tags.Collections.Object_Wood);
 
-        if (isWoodObject)
+        if (objectHit.HasAllTags(Tags.Collections.Object_Wood))
             AudioManager.Play("Sword_Hit_Wood");
+        else if (objectHit.HasAllTags(Tags.Collections.NPC_Skeleton))
+            AudioManager.Play("Sword_Bone_Hit");
+        
     }
 
     #endregion Attack Collider Event Handlers

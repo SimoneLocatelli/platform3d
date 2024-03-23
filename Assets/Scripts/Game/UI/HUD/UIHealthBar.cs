@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -54,8 +55,21 @@ public class UIHealthBar : BaseBehaviourLight
         UpdateSecondaryBar(lifePercentage);
 
         lifeSystem.OnDamageReceived += OnDamageReceived;
+        lifeSystem.OnDeath += OnDeath;
         lifeSystem.OnHealed += OnHealed;
     }
+
+    private void OnDeath(LifeSystem lifeSystem)
+    {
+        if (UIHealthBarType == UIHealthBarTypes.NPC)
+            HideCanvas();
+
+        healthChanged = false;
+        damageStartTime = 0;
+    }
+
+    private void HideCanvas()
+        => GetComponent<Canvas>().enabled = false;
 
     private void OnHealed(LifeSystem lf)
     {

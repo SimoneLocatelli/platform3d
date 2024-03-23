@@ -283,7 +283,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  groundLayers: []
   _modelAnimator: {fileID: 5957360594403923925}
   model: {fileID: 8818012851795455353}
   direction: {x: 0, y: 0, z: 0}
@@ -317,6 +316,15 @@ MonoBehaviour:
   EnableDebugLog: 0
   mixerGroup: {fileID: 0}
   Sounds:
+  - name: Sword_Bone_Hit
+    clip: {fileID: 8300000, guid: a1e8ca8e6aa63f440b03c22c11355314, type: 3}
+    source: {fileID: 0}
+    mixerGroup: {fileID: 0}
+    enabled: 1
+    playOnceInEditMode: 0
+    loop: 0
+    volume: {x: 0.9, y: 1}
+    pitch: {x: 0.72, y: 0.8}
   - name: Sword_Woosh1
     clip: {fileID: 8300000, guid: 4f2c93fe00565f2449f493560bcb1f86, type: 3}
     source: {fileID: 0}
@@ -333,8 +341,8 @@ MonoBehaviour:
     enabled: 1
     playOnceInEditMode: 0
     loop: 0
-    volume: {x: 0.7, y: 0.84}
-    pitch: {x: 1.16, y: 1.25}
+    volume: {x: 0.95, y: 1}
+    pitch: {x: 0.97, y: 1.02}
   - name: Sword_Hit_Wood
     clip: {fileID: 8300000, guid: 5e454af50d325e54499383712cd850a3, type: 3}
     source: {fileID: 0}
@@ -360,14 +368,14 @@ MonoBehaviour:
   EnableDebugLog: 0
   _life: 500
   MaxLife: 500
-  DestroyWhenDead: 0
-  InvulnerabilityDuration: 1
-  life: 0
-  InvulnerabilityManualControl: 0
+  MaxLifeAtStart: 1
   IsInvulnerable: 0
+  InvulnerabilityDuration: 1
   TemporarilyInvulnerableAfterDamage: 0
+  InvulnerabilityManualControl: 0
+  DestroyWhenDead: 0
   disableAllColliders: 0
-  disableAllMeshRenders: 1
+  disableAllMeshRenderers: 1
   initialised: 1
   _lifePercentage: 0
   PlayDestroyedSound: 0

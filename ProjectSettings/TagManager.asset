@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Object
   - Material_Wood
+  - Material_Bone
+  - NPC
   layers:
   - Default
   - TransparentFX

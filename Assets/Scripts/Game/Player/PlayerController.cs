@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -87,11 +88,12 @@ public partial class PlayerController : BaseBehaviour3D
     #region Ground Check Fields
 
     [Header("Ground Check")]
-    [SerializeField]
-    private Transform groundCheck;
+    [SerializeField] private Transform groundCheck;
 
-    [SerializeField]
-    private LayerMask groundLayer;
+    [Range(0.1f, 4)]
+    [SerializeField] private float groundCheckRadius = 0.5f;
+
+    [SerializeField] private LayerMask groundLayer;
 
     #endregion Ground Check Fields
 
@@ -218,12 +220,19 @@ public partial class PlayerController : BaseBehaviour3D
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
         direction = GetMovementVector();
+        DebugLog("direction: " + direction);
         PerformAttack();
         PerformMovement();
     }
 
     private void Reset()
         => InitCamera();
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+    }
 
     #endregion Life Cycle
 
@@ -482,10 +491,7 @@ public partial class PlayerController : BaseBehaviour3D
     }
 
     public bool IsGrounded()
-    {
-        isGrounded = Physics.CheckSphere(groundCheck.position, 0.5f, groundLayer);
-        return isGrounded;
-    }
+        => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
     /// <summary>
     /// This rotates the player object so that it looks in the same direction as the camera.

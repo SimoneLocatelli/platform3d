@@ -19,7 +19,7 @@ public abstract class BaseBlackboard : BaseBehaviourLight
         if (gameObject != null)
             return gameObject;
 
-        var obj = GameObject.FindFirstObjectByType<TGameObject>();
+        var obj = GameObject.FindFirstObjectByType<TGameObject>(FindObjectsInactive.Exclude);
 
         Assert.IsNotNull(obj, $"Blackboard {blackboardTypeName} - Could not find object of type [{typeof(TGameObject).FullName}");
 

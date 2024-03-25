@@ -162,7 +162,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &4034712372846158848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,33 +303,51 @@ MonoBehaviour:
     loop: 0
     volume: {x: 0.9, y: 1}
     pitch: {x: 0.72, y: 0.8}
-  - name: Sword_Woosh1
-    clip: {fileID: 8300000, guid: 4f2c93fe00565f2449f493560bcb1f86, type: 3}
-    source: {fileID: 0}
-    mixerGroup: {fileID: 0}
-    enabled: 1
-    playOnceInEditMode: 0
-    loop: 0
-    volume: {x: 0.86, y: 0.9}
-    pitch: {x: 0.96, y: 1.43}
-  - name: Sword_Woosh2
+  - name: Sword_Woosh
     clip: {fileID: 8300000, guid: ffc14d93e01557b4f9585121dea374cb, type: 3}
     source: {fileID: 0}
     mixerGroup: {fileID: 0}
     enabled: 1
     playOnceInEditMode: 0
     loop: 0
-    volume: {x: 0.95, y: 1}
+    volume: {x: 0.33, y: 0.38}
     pitch: {x: 0.97, y: 1.02}
-  - name: Sword_Hit_Wood
-    clip: {fileID: 8300000, guid: 5e454af50d325e54499383712cd850a3, type: 3}
+  - name: Jump Landed
+    clip: {fileID: 8300000, guid: 93967bae42ad0a24d9eaefb48d10495c, type: 3}
     source: {fileID: 0}
     mixerGroup: {fileID: 0}
     enabled: 1
     playOnceInEditMode: 0
     loop: 0
-    volume: {x: 0.74, y: 1}
-    pitch: {x: 0.81, y: 0.89}
+    volume: {x: 0.33, y: 0.38}
+    pitch: {x: 0.84, y: 1.28}
+  - name: Footstep
+    clip: {fileID: 8300000, guid: bd8530bb5569e8c41a5235f298d7a86f, type: 3}
+    source: {fileID: 0}
+    mixerGroup: {fileID: 0}
+    enabled: 1
+    playOnceInEditMode: 0
+    loop: 0
+    volume: {x: 0.33, y: 0.38}
+    pitch: {x: 1.03, y: 1.15}
+  - name: Footstep
+    clip: {fileID: 8300000, guid: c4ec74aa032496447a4f2a70ca0f3958, type: 3}
+    source: {fileID: 0}
+    mixerGroup: {fileID: 0}
+    enabled: 1
+    playOnceInEditMode: 0
+    loop: 0
+    volume: {x: 0.33, y: 0.38}
+    pitch: {x: 1.03, y: 1.15}
+  - name: Footstep
+    clip: {fileID: 8300000, guid: 43a1677370da93046a227daab696d840, type: 3}
+    source: {fileID: 0}
+    mixerGroup: {fileID: 0}
+    enabled: 1
+    playOnceInEditMode: 0
+    loop: 0
+    volume: {x: 0.33, y: 0.38}
+    pitch: {x: 1.03, y: 1.15}
   removeAllAudioSources: 0
 --- !u!114 &8844511823186546469
 MonoBehaviour:

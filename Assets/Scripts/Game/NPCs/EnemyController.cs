@@ -227,6 +227,7 @@ public class EnemyController : BaseBehaviour3D
 
     private void OnMeleeAttackSwoosh()
     {
+        AudioManager.Play("Sword_Woosh");
 
         if (attackCollider != null)
             attackCollider.ToggleCollider(true);

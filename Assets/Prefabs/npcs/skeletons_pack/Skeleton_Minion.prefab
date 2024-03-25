@@ -964,7 +964,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 251ad067252892b4baea63287aa78970, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 177.96652
+      value: 137.46722
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 251ad067252892b4baea63287aa78970, type: 3}
       propertyPath: m_LocalPosition.y
@@ -972,7 +972,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 251ad067252892b4baea63287aa78970, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.499855
+      value: 36.517967
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 251ad067252892b4baea63287aa78970, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1793,14 +1793,6 @@ MonoBehaviour:
   remainingAttackCooldown: 0
   maxPlayerVisibilityDistance: 30
   drawCanSeePlayerRays: 1
-  hasSeenPlayer: 0
-  minRotation: 180
-  maxRotation: 360
-  rotateFlag: 1
-  timeToRotate: 5
-  timeToToWaitBeforeRotate: 2
-  rotationTimeElapsed: 0
-  isWaitingBeforeRotating: 0
 --- !u!114 &5061172341650898802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1869,6 +1861,15 @@ MonoBehaviour:
     loop: 0
     volume: {x: 0.9, y: 1}
     pitch: {x: 1.31, y: 1.49}
+  - name: Sword_Woosh
+    clip: {fileID: 8300000, guid: ffc14d93e01557b4f9585121dea374cb, type: 3}
+    source: {fileID: 0}
+    mixerGroup: {fileID: 0}
+    enabled: 1
+    playOnceInEditMode: 0
+    loop: 0
+    volume: {x: 0.35, y: 0.45}
+    pitch: {x: 0.93, y: 1.06}
   removeAllAudioSources: 0
 --- !u!114 &7100839725386419686
 MonoBehaviour:

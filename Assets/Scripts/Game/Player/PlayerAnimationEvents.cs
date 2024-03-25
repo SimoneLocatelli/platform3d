@@ -55,6 +55,18 @@ public class PlayerAnimationEvents : BaseBehaviour
         remove { onAttackAnimationSwoosh -= value; }
     }
 
+    // Run Animation Footstep
+    public delegate void OnRunAnimationFootstepHandler();
+
+    private OnRunAnimationFootstepHandler onRunAnimationFootstep;
+
+    public event OnRunAnimationFootstepHandler OnRunAnimationFootstep
+
+    {
+        add { onRunAnimationFootstep += value; }
+        remove { onRunAnimationFootstep -= value; }
+    }
+
     #endregion Events
 
     #region Consts
@@ -77,6 +89,8 @@ public class PlayerAnimationEvents : BaseBehaviour
 
     private void AttackAnimationSwooshCalled()
         => onAttackAnimationSwoosh?.Invoke();
+    private void RunAnimationFootstepCalled()
+        => onRunAnimationFootstep?.Invoke();
 
     #endregion Animation Event Handlers
 

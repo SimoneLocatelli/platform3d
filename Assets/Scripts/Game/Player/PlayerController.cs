@@ -194,6 +194,7 @@ public partial class PlayerController : BaseBehaviour
         PlayerAnimationEvents.OnLandingAnimationEnded += OnLandingAnimationEnded;
         PlayerAnimationEvents.OnAttackAnimationEnded += OnAttackAnimationEnded;
         PlayerAnimationEvents.OnAttackAnimationSwoosh += OnAttackAnimationSwoosh;
+        PlayerAnimationEvents.OnRunAnimationFootstep += OnRunAnimationFootstep;
 
         attackCollider.OnDamageApplied += OnDamageApplied;
         currentStamina = staminaMax;
@@ -318,6 +319,7 @@ public partial class PlayerController : BaseBehaviour
                 {
                     if (IsGrounded())
                     {
+                        AudioManager.Play("Jump Landed");
                         isFalling = false;
                         isJumping = false;
                         isGrounded = true;
@@ -398,15 +400,14 @@ public partial class PlayerController : BaseBehaviour
     {
         float staminaFactor;
 
-
         if (isJumping || isAttacking)
             // No change to stamina when jumping or attacking
             staminaFactor = 0;
         else if (isRunning)
-            // Full depletion speed when running 
+            // Full depletion speed when running
             staminaFactor = -staminaDepletionSpeed;
         else if (isWalking)
-            // Half depletion speed when walking 
+            // Half depletion speed when walking
             staminaFactor = staminaRecoverySpeed / 2;
         else
             // Full recovery speed if player is not performing actions
@@ -477,7 +478,7 @@ public partial class PlayerController : BaseBehaviour
 
     private void OnAttackAnimationSwoosh()
     {
-        AudioManager.Play("Sword_Woosh2");
+        AudioManager.Play("Sword_Woosh");
         attackCollider.ToggleCollider(true);
     }
 
@@ -498,6 +499,11 @@ public partial class PlayerController : BaseBehaviour
         isJumping = false;
     }
 
+    private void OnRunAnimationFootstep()
+    {
+        AudioManager.Play("Footstep");
+    }
+
     #endregion Animation Triggers
 
     #region Attack Collider Event Handlers
@@ -507,12 +513,10 @@ public partial class PlayerController : BaseBehaviour
         DebugLogMethodEntry();
         Assert.IsNotNull(objectHit);
 
-
         if (objectHit.HasAllTags(Tags.Collections.Object_Wood))
             AudioManager.Play("Sword_Hit_Wood");
         else if (objectHit.HasAllTags(Tags.Collections.NPC_Skeleton))
             AudioManager.Play("Sword_Bone_Hit");
-        
     }
 
     #endregion Attack Collider Event Handlers

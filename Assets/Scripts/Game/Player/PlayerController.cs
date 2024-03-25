@@ -234,7 +234,7 @@ public partial class PlayerController : BaseBehaviour
             PlayerAnimationEvents.ToggleAttackAnimation(false);
 
             //
-            attackCollider.ToggleCollider(isAttacking);
+            attackCollider.ToggleCollider(false);
 
             // Let's make sure the flags are disabled
             isAttacking = false;
@@ -478,7 +478,7 @@ public partial class PlayerController : BaseBehaviour
     private void OnAttackAnimationSwoosh()
     {
         AudioManager.Play("Sword_Woosh2");
-        attackCollider.ToggleCollider(isAttacking);
+        attackCollider.ToggleCollider(true);
     }
 
     private void OnJumpAnimationReady()

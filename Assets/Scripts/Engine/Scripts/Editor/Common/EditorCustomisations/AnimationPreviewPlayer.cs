@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -69,6 +70,17 @@ namespace EditorScripts
             var animationClipEditor = Resources.FindObjectsOfTypeAll(animationClipEditorType).FirstOrDefault();
             if (animationClipEditor == null)
                 return null;
+
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                var allFields = animationClipEditorType.GetFields(PRIVATE_FIELD_BINDING_FLAGS).ToList();
+                var allFieldNames = allFields.Select(f => f.Name).OrderBy(f => f).ToList();
+                bool printOutFieldNames = false;
+                if (printOutFieldNames)
+                    Console.WriteLine(allFieldNames);
+            }
+#endif
 
             var avatarPreview = animationClipEditorType.GetField("m_AvatarPreview", PRIVATE_FIELD_BINDING_FLAGS)?.GetValue(animationClipEditor);
             if (avatarPreview == null)

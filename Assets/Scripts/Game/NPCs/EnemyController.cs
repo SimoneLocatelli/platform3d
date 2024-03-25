@@ -1,98 +1,246 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Assertions;
 
+[RequireComponent(typeof(EnemyAnimationsController))]
+[RequireComponent(typeof(LifeSystem))]
+[RequireComponent(typeof(EnemyState))]
 public class EnemyController : BaseBehaviour3D
-
 {
-    private NavMeshAgent _agent;
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private float remainingDistance;
-
-    [Range(0.1f, 25f)]
-    [SerializeField] private float speed = 16;
+    #region Props - Path Finding
 
     [Header("Path Finding")]
-    [Range(0.1f, 25f)]
-    [SerializeField] private float stoppingDistance = 3;
+    [SerializeField] private bool enableNavMeshAgent;
 
-    [SerializeField]
-    private bool canFollowTarget;
+    [Range(6f, 20f)]
+    [SerializeField] private float maxDistanceFromPlayer;
 
+    [Header("Combat")]
+    [Range(0.1f, 2f)]
+    [SerializeField] private float attackCoolDown;
+
+    [ReadOnlyProperty][SerializeField] private float remainingAttackCooldown;
+
+    #endregion Props - Path Finding
+
+    #region Props - Can See Player
+
+    [Header("Can See Player")]
+    [Range(10, 100)]
+    [SerializeField] private int maxPlayerVisibilityDistance = 30;
+
+    [SerializeField] private bool drawCanSeePlayerRays;
+
+    #endregion Props - Can See Player
+
+    #region Dependencies
+
+    private NavMeshAgent _agent;
 
     public NavMeshAgent Agent => GetInitialisedComponent(ref _agent);
 
-    [ReadOnlyProperty]
-    [SerializeField] private bool hasPath;
-
-    [ReadOnlyProperty]
-    [SerializeField] private bool isStopped;
-
-    [ReadOnlyProperty]
-    [SerializeField] private Vector3 velocity;
-
-    [ReadOnlyProperty]
-    [SerializeField] private Vector3 velocityNormalized;
-
-    [ReadOnlyProperty]
-    [SerializeField] private bool pathPending;
-
-    [ReadOnlyProperty]
-    [SerializeField] private bool isPathStale;
-
-    [ReadOnlyProperty]
-    [SerializeField] private NavMeshPathStatus pathStatus;
-
-    [ReadOnlyProperty]
-    [SerializeField] private Vector3 pathEndPosition;
-
-    [ReadOnlyProperty]
-    [SerializeField] private Vector3 rbVelocity;
-
-
     private LifeSystem _lifeSystem;
+
     private LifeSystem LifeSystem => GetInitialisedComponent(ref _lifeSystem);
+
+    private EnemyAnimationsController _enemyAnimationsController;
+
+    private EnemyAnimationsController EnemyAnimationsController => GetInitialisedComponent(ref _enemyAnimationsController);
+
+    private Transform PlayerTransform => Blackboards.Instance.PlayerBlackboard.PlayerTransform;
+
+    private Vector3 PlayerPosition => PlayerTransform.position;
+
+    private EnemyState _enemyState;
+
+    private EnemyState EnemyState => GetInitialisedComponent(ref _enemyState);
+
+    private AttackCollider attackCollider;
+
+    #endregion Dependencies
+
+    #region Properties
+
+    public bool CanMove => enableNavMeshAgent && !IsAttacking;
+
+    #endregion Properties
+
+    #region Properties - Animation Parameters
+
+    public bool IsAttacking
+    {
+        get => EnemyAnimationsController.IsAttacking;
+        set => EnemyAnimationsController.IsAttacking = value;
+    }
+
+    public bool IsDying
+    {
+        get => EnemyAnimationsController.IsDying;
+        set => EnemyAnimationsController.IsDying = value;
+    }
+
+    public bool IsInAttackCooldown
+    {
+        get => EnemyAnimationsController.IsInAttackCooldown;
+        set => EnemyAnimationsController.IsInAttackCooldown = value;
+    }
+
+    public bool IsMoving
+    {
+        get => EnemyAnimationsController.IsMoving;
+        set => EnemyAnimationsController.IsMoving = value;
+    }
+
+    #endregion Properties - Animation Parameters
 
     private void Start()
     {
+        attackCollider = gameObject.GetComponentInChildren<AttackCollider>(includeInactive: false);
         LifeSystem.OnDeath += OnDeath;
+        UpdateAgentTarget();
     }
 
     private void OnDeath(LifeSystem lifeSystem)
     {
-        Animator.SetBool("IsDying", true);
-        Agent.destination = transform.position;
+        IsDying = true;
+        IsMoving = false;
+        IsAttacking = false;
+        ClearAgentTarget();
     }
 
     private void Update()
     {
         if (LifeSystem.IsDead)
-             return;
+            return;
 
+        EnemyState.PollStateInfo();
 
+        UpdateAgentTarget();
 
-        Agent.stoppingDistance = stoppingDistance;
-        //Agent.speed = speed;
-        if (canFollowTarget)
-            Agent.destination = Blackboards.Instance.PlayerBlackboard.PlayerTransform.position;
-        else
-            Agent.destination = transform.position;
-        remainingDistance = Agent.remainingDistance;
-        hasPath = Agent.hasPath;
-        isStopped = Agent.velocity == Vector3.zero;
+        var canSeePlayer = CanSeePlayer();
 
-        velocity = Agent.velocity;
-        velocityNormalized = Agent.velocity.normalized;
-        pathPending = Agent.pathPending;
-        isPathStale = Agent.isPathStale;
-        pathStatus = Agent.pathStatus;
-        pathEndPosition = Agent.pathEndPosition;
+        if (!canSeePlayer && Agent.remainingDistance > maxDistanceFromPlayer)
+        {
+            Agent.isStopped = true;
+            IsMoving = false;
+            IsAttacking = false;
+            IsInAttackCooldown = false;
+            return;
+        }
 
-        if (isStopped)
-            transform.LookAt(pathEndPosition);
+        // LookAtTarget();
 
-        Animator.SetBool("IsMoving", !isStopped);
+        // Enable/disable moving animation
+        IsMoving = !EnemyState.IsStopped;
+
+        PerformAttack();
     }
+
+    private bool CanSeePlayer()
+    {
+        var playerPosition = Blackboards.Instance.PlayerBlackboard.PlayerPosition;
+        var layerMask = Blackboards.Instance.PlayerBlackboard.PlayerLayerMask;
+        var currentPosition = transform.position;
+        var direction = transform.TransformDirection(Vector3.forward);
+        direction = currentPosition.GetDirectionNormalised(PlayerPosition);
+        var maxDistance = this.maxPlayerVisibilityDistance;
+
+        // Does the ray intersect any objects excluding the player layer
+        var playerHit = Physics.Raycast(transform.position, direction, out RaycastHit hit, maxDistance, layerMask);
+        if (drawCanSeePlayerRays)
+        {
+            var distance = playerHit ? hit.distance : 1000;
+            Debug.DrawRay(currentPosition, direction * maxDistance, Color.yellow);
+        }
+        DebugLog("CanSeePlayer: [" + playerHit + "]");
+        return playerHit;
+    }
+
+    private void PerformAttack()
+    {
+        Assert.IsNotNull(attackCollider, "AttackCollider is not assigned.");
+
+        // If attack is in progress, we ensure the Agent does not try to follow the player
+        // who might have moved to avoid the attack
+        if (IsAttacking)
+        {
+            Agent.isStopped = true;
+            return;
+        }
+
+        Agent.isStopped = false;
+
+        // Attack Collider is always off when not attacking
+        attackCollider.ToggleCollider(false);
+
+        // If path is being recalculated, make no further changes
+        if (Agent.pathPending)
+            return;
+
+        // If it's moving or target is too far to be attacked,
+        // then perform reset and do not attempt attack
+        if (!EnemyState.IsStopped || EnemyState.IsTargetOutOfReach)
+        {
+            // Reset attack state
+            IsInAttackCooldown = false;
+            remainingAttackCooldown = 0;
+            return;
+        }
+
+        ClearAgentTarget();
+
+        // Is waiting for attack cooldown?
+        if (remainingAttackCooldown > 0)
+        {
+            DebugLog("Attack Cooldown");
+            IsInAttackCooldown = true;
+            remainingAttackCooldown -= Time.deltaTime;
+            remainingAttackCooldown = Mathf.Max(remainingAttackCooldown, 0);
+            return;
+        }
+
+        // We can start the attack!
+        DebugLog("Melee attack");
+        IsInAttackCooldown = false;
+        IsAttacking = true;
+        remainingAttackCooldown = attackCoolDown;
+    }
+
+    private void LookAtTarget()
+    {
+        if (IsAttacking)
+            return;
+        else if (enableNavMeshAgent && EnemyState.IsStopped)
+            transform.LookAt(EnemyState.PathEndPosition);
+    }
+
+    private void UpdateAgentTarget()
+    {
+        Agent.destination = PlayerPosition;
+    }
+
+    private void ClearAgentTarget()
+        => Agent.destination = transform.position;
+
+    #region Animation Triggers
+
+    private void OnMeleeAttackSwoosh()
+    {
+
+        if (attackCollider != null)
+            attackCollider.ToggleCollider(true);
+        else
+            Debug.LogWarning("Attack collider is null");
+    }
+
+    private void OnMeleeAttackSwooshEnded()
+    {
+        if (attackCollider != null)
+            attackCollider.ToggleCollider(false);
+        else
+            Debug.LogWarning("Attack collider is null");
+    }
+
+    #endregion Animation Triggers
 }

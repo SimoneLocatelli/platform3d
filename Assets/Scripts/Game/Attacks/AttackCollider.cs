@@ -35,6 +35,7 @@ public class AttackCollider : BaseBehaviour
             swordCollider = GetComponent<Collider>();
 
         Assert.IsNotNull(swordCollider);
+        DebugLog("Collider enabled state toggled: " + isEnabled, swordCollider.enabled != isEnabled);
         swordCollider.enabled = isEnabled;
     }
 

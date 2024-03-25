@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 
 [ExecuteAlways]
 public class CameraMouseControlled : BaseBehaviour
@@ -9,8 +10,6 @@ public class CameraMouseControlled : BaseBehaviour
 
     #endregion Private Fields
 
-
-
     #region Props
 
     [Header("Tracked Object")]
@@ -20,7 +19,6 @@ public class CameraMouseControlled : BaseBehaviour
     [SerializeField] private bool forceRefresh;
 
     [Header("Mouse Movement")]
-
     [Range(1, 20)]
     [SerializeField] private float mouseMovementXSensitivity = 20;
 
@@ -40,11 +38,9 @@ public class CameraMouseControlled : BaseBehaviour
     [MinMaxRange(1, 10)]
     [SerializeField] private Vector2Int zoomYRange;
 
-    #endregion Props Settings
-
+    #endregion Props
 
     #region Props Settings
-
 
     [Header("Debug")]
     [SerializeField]
@@ -54,7 +50,6 @@ public class CameraMouseControlled : BaseBehaviour
     [SerializeField]
     [ReadOnlyProperty]
     private float radius = 1;
-
 
     [SerializeField]
     [ReadOnlyProperty]
@@ -86,23 +81,28 @@ public class CameraMouseControlled : BaseBehaviour
 
     private void Start()
     {
-
         if (Application.isPlaying)
         {
             Cursor.lockState = CursorLockMode.Locked;
             if (target == null)
-                target = Blackboards.Instance. PlayerBlackboard.PlayerTransform;
+                target = Blackboards.Instance.PlayerBlackboard.PlayerTransform;
         }
-
     }
+
     #endregion Lifecycle
 
     #region Methods
 
     private void UpdateCameraPosition()
     {
+        if (!Application.isPlaying && target == null)
+            return;
+
         if (!Application.isPlaying && !forceRefresh)
             return;
+
+        Assert.IsNotNull(target);
+
         mouseAxis = mouseSystem.Axis;
 
         if (forceRefresh || (isMouseInsideGameScreen && mouseAxis.x != 0))

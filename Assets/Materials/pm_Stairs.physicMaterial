@@ -6,9 +6,9 @@ PhysicMaterial:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pm_Player
-  dynamicFriction: 0
-  staticFriction: 0
+  m_Name: pm_Stairs
+  dynamicFriction: 12
+  staticFriction: 12
   bounciness: 0
   frictionCombine: 0
   bounceCombine: 0

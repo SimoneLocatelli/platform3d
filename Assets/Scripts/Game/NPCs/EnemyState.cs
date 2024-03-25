@@ -52,11 +52,11 @@ public class EnemyState : BaseBehaviour3D
         get
         {
             return _agentRemainingDistance >= Agent.stoppingDistance;
-            var currentPosition = transform.position;
-            var playerPosition = Blackboards.Instance.PlayerBlackboard.PlayerPosition;
-            _distanceFromPlayer = currentPosition.Distance(playerPosition);
-            _isOutOfReach = _distanceFromPlayer >= Agent.stoppingDistance;
-            return _isOutOfReach;
+            //var currentPosition = transform.position;
+            //var playerPosition = Blackboards.Instance.PlayerBlackboard.PlayerPosition;
+            //_distanceFromPlayer = currentPosition.Distance(playerPosition);
+            //_isOutOfReach = _distanceFromPlayer >= Agent.stoppingDistance;
+            //return _isOutOfReach;
         }
     }
 

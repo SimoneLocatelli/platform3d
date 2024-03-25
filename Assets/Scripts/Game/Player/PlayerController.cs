@@ -4,8 +4,12 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 [RequireComponent(typeof(PlayerInputManager))]
-public partial class PlayerController : BaseBehaviour
+public partial class PlayerController : BaseBehaviour3D
 {
+    public bool useRb;
+    public Vector3 RbVelocity;
+    public int Damage = 70;
+
     #region Attack Fields
 
     [SerializeField] private AttackCollider attackCollider;
@@ -22,14 +26,6 @@ public partial class PlayerController : BaseBehaviour
     [Range(1, 10)]
     [SerializeField] private float runSpeed = 5;
 
-    [SerializeField] private float jumpForce = 20;
-
-    [Range(0, 20)]
-    [SerializeField] private float gravity = 9.81f;
-
-    [Range(0, 20)]
-    [SerializeField] private float gravityScale = 5;
-
     [Range(0.01f, 10f)]
     [SerializeField] private float turnSmoothTime = 0.2f;
 
@@ -42,14 +38,35 @@ public partial class PlayerController : BaseBehaviour
     [ReadOnlyProperty]
     [SerializeField] private float speedSmoothVelocity;
 
+    [ReadOnlyProperty]
+    [SerializeField] private float timeSinceStartedRunning = 0;
+
+    [Header("Jump")]
+    [SerializeField] private float jumpForce = 20;
+
+    [Range(1, 5)]
+    [SerializeField] private float jumpForwardMultiplier = 1.5f;
+
+    [Header("Physics")]
+    [Range(0, 20)]
+    [SerializeField] private float gravity = 9.81f;
+
+    [Range(0, 20)]
+    [SerializeField] private float gravityScale = 5;
+
+    [Header("Animations")]
     [Range(0.3f, 5)]
     [SerializeField] private float runAnimationAccelleration = 2f;
 
     [ReadOnlyProperty]
     [SerializeField] private float currentSpeed;
 
+    [Header("Stamina")]
     [Range(10, 300)]
     [SerializeField] private float staminaMax = 100;
+
+    [ReadOnlyProperty]
+    [SerializeField] private float currentStamina;
 
     [Range(0.1f, 100)]
     [SerializeField] private float staminaDepletionSpeed = 1;
@@ -62,12 +79,6 @@ public partial class PlayerController : BaseBehaviour
 
     [Range(0.5f, 10)]
     [SerializeField] private float runMinStaminaThreshold = 2;
-
-    [ReadOnlyProperty]
-    [SerializeField] private float timeSinceStartedRunning = 0;
-
-    [ReadOnlyProperty]
-    [SerializeField] private float currentStamina;
 
     public float StaminaPercentage => currentStamina / staminaMax;
 
@@ -154,8 +165,7 @@ public partial class PlayerController : BaseBehaviour
 
     protected override Animator Animator => _modelAnimator;
 
-    private PlayerInputManager PlayerInputManager
-        => GetInitialisedComponent(ref _playerInputManager);
+    private PlayerInputManager PlayerInputManager => GetInitialisedComponent(ref _playerInputManager);
 
     private PlayerAnimationEvents _playerAnimationEvents;
 
@@ -179,7 +189,7 @@ public partial class PlayerController : BaseBehaviour
     [ReadOnlyProperty]
     private Vector3 _modelOrientationNormalised;
 
-    public Transform Camera;
+    private new Transform camera;
 
     #endregion Dependencies
 
@@ -199,27 +209,21 @@ public partial class PlayerController : BaseBehaviour
         attackCollider.OnDamageApplied += OnDamageApplied;
         currentStamina = staminaMax;
 
-        if (Camera == null)
-            Camera = Blackboards.Instance.CameraBlackboard.CameraTransform;
+        InitCamera();
     }
-
-    public int Damage = 70;
 
     private void Update()
     {
         Assert.IsNotNull(model);
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;
-        direction = PlayerInputManager.MovementVector;
+        direction = GetMovementVector();
         PerformAttack();
         PerformMovement();
     }
 
     private void Reset()
-    {
-        if (Camera == null)
-            Camera = Blackboards.Instance.CameraBlackboard.CameraTransform;
-    }
+        => InitCamera();
 
     #endregion Life Cycle
 
@@ -263,116 +267,62 @@ public partial class PlayerController : BaseBehaviour
         // Since we're here, attack is already in progress
         else
         {
-            DebugLog($"{nameof(PerformAttack)} - Handling attack in progress");
+            // DebugLog($"{nameof(PerformAttack)} - Handling attack in progress");
 
             // Rotate Player
             RotateTowardsCameraDirection();
         }
     }
 
-    /// <summary>
-    /// This rotates the player object so that it looks in the same direction as the camera.
-    /// Useful when we want to make the player look 'straight/forward' relative to the camera.
-    /// </summary>
-    private void RotateTowardsCameraDirection()
-    {
-        float targetRotation = Mathf.Atan2(y: 0, x: 0) * Mathf.Rad2Deg + Camera.eulerAngles.y;
-        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, 0.01f);
-    }
-
     private void PerformMovement()
     {
-        var inputVector = PlayerInputManager.MovementVector;
-        if (isAttacking)
-            inputVector = Vector3.zero;
+        HandleJumpingAndFalling();
 
-        var movementJumpFactor = (isJumping ? 5 : 1);
-        var x = inputVector.x * speed;
-        var z = inputVector.z * speed;
-        var y = 0f;
-        var currentMovement = new Vector3(x, y, z) * movementJumpFactor;
-
-        if (!isJumping)
-        {
-            if (!isAttacking)
-            {
-                isJumping = PlayerInputManager.JumpPressedDown;
-                isPlayingPreJumpAnimation = isJumping;
-                DebugLog($"Started jump", condition: isJumping);
-            }
-        }
-        else
-        {
-            if (!isPlayingPreJumpAnimation)
-            {
-                velocity += -gravity * gravityScale * Time.deltaTime;
-
-                if (velocity <= 0)
-                {
-                    velocity = Math.Max(velocity, 0);
-                    isFalling = true;
-                }
-
-                y = velocity;
-
-                if (isFalling)
-                {
-                    if (IsGrounded())
-                    {
-                        AudioManager.Play("Jump Landed");
-                        isFalling = false;
-                        isJumping = false;
-                        isGrounded = true;
-                        isLanding = true;
-                    }
-                }
-            }
-        }
-
-        var movementVector = new Vector3(x, 0, z);
-        isWalking = !isJumping && currentMovement != Vector3.zero;
+        isWalking = !isJumping && direction != Vector3.zero;
 
         // Player can't start running if does not have enough stamina
         UpdateRunningState();
 
-        float targetSpeed = speed + (isRunning ? runSpeed : 0); //* movementVector.magnitude;
-        if (movementVector != Vector3.zero)
+        Vector3 directionWithSpeed;
+        var canMove = direction != Vector3.zero && !isPlayingPreJumpAnimation && !isLanding;
+        if (canMove)
         {
-            float targetRotation = Mathf.Atan2(movementVector.x, movementVector.z) * Mathf.Rad2Deg + Camera.eulerAngles.y;
+            // Rotate character towards the forward direction relative to the movement vector
+            float targetRotation = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camera.eulerAngles.y;
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, turnSmoothTime);
+
+            // Calculate movement with velocity
+            currentSpeed = CalculateTargetSpeed();
+            directionWithSpeed = (transform.forward * currentSpeed).Update(y: Rb.velocity.y);
         }
-        currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, speedSmoothTime);
-
-        var dir = inputVector == Vector3.zero ? Vector3.zero : transform.forward * currentSpeed;
-        dir.y = y;
-        transform.Translate(dir * Time.deltaTime, Space.World);
-
-        var runAnimationSpeed = Animator.GetFloat("RunAnimSpeed");
-        if (!isWalking && !isJumping)
-        {
-            currentSpeed = turnSmoothVelocity = speedSmoothVelocity = 0;
-        }
-
-        if (!isWalking)
-            runAnimationSpeed = 1;
         else
         {
-            if (LastMovementVector.x == 0 && LastMovementVector.z == 0) // no walking movement
-            {
-                runAnimationSpeed = 0;
-            }
-            else if (runAnimationSpeed < 1)
-            {
-                runAnimationSpeed += runAnimationAccelleration * Time.deltaTime;
-                runAnimationSpeed = Mathf.Min(runAnimationSpeed, 1);
-            }
+            directionWithSpeed = Vector3.zero;
+        }
+
+        var shouldUpdateVelocity = !isJumping && !isPlayingPreJumpAnimation && !isFalling;
+
+        if (isPlayingPreJumpAnimation)
+            Rb.velocity = Vector3.zero;
+        if (shouldUpdateVelocity)
+            Rb.velocity = directionWithSpeed;
+
+        if (!isWalking && !isPlayingPreJumpAnimation)
+        {
+            ResetSpeed();
         }
 
         // Stamina update
 
         UpdateStamina();
 
+        // Variables update
+        var runAnimationSpeed = isRunning ? 1.25f : 1;
+        LastMovementVector = direction;
+        RbVelocity = Rb.velocity;
+
         // Animation update
+
         Animator.SetBool("IsJumping", isJumping);
         Animator.SetBool("IsWalking", isWalking);
         Animator.SetBool("OnGround", isGrounded);
@@ -380,8 +330,82 @@ public partial class PlayerController : BaseBehaviour
         Animator.SetBool("IsFalling", isFalling);
         Animator.SetBool("IsRunning", isRunning);
         Animator.SetFloat("RunAnimSpeed", runAnimationSpeed);
+    }
 
-        LastMovementVector = movementVector;
+    private void ResetSpeed()
+    {
+        currentSpeed = turnSmoothVelocity = speedSmoothVelocity = 0;
+    }
+
+    private float CalculateTargetSpeed()
+    {
+        float targetSpeed = speed + (isRunning ? runSpeed : 0);
+        return Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, speedSmoothTime);
+    }
+
+    private void HandleJumpingAndFalling()
+    {
+        if (!isJumping)
+        {
+            isGrounded = isGrounded || IsGrounded();
+            if (isGrounded && !isAttacking)
+            {
+                isJumping = PlayerInputManager.JumpPressedDown;
+                isPlayingPreJumpAnimation = isJumping;
+                DebugLog($"Started jump", condition: isJumping);
+            }
+
+            return;
+        }
+
+        if (isPlayingPreJumpAnimation)
+            return;
+
+        if (isFalling)
+        {
+            if (IsGrounded())
+            {
+                DebugLog($"Started landing");
+                AudioManager.Play("Jump Landed");
+                isFalling = false;
+                isJumping = false;
+                isGrounded = true;
+                isLanding = true;
+            }
+            //y = Rb.velocity.y;
+        }
+        else
+        {
+            isGrounded = false;
+            if (Rb.velocity.y < 0)
+            {
+                DebugLog($"Started falling");
+
+                velocity = Math.Max(velocity, 0);
+                Rb.AddForce(transform.up * -4, ForceMode.Impulse);
+
+                isFalling = true;
+            }
+            else if (Rb.velocity.y > 0)
+            {
+                DebugLog("Rb.velocity - Before: " + Rb.velocity);
+                var jumpVelocity = Rb.velocity.y;
+                jumpVelocity = jumpVelocity - (gravity * gravityScale * Time.deltaTime);
+                Rb.velocity = Rb.velocity.Update(y: jumpVelocity);
+                DebugLog("Rb.velocity -  After: " + Rb.velocity);
+            }
+
+            //y = Rb.velocity.y;
+            //y = velocity;
+        }
+    }
+
+    private Vector3 GetMovementVector()
+    {
+        if (isAttacking)
+            return Vector3.zero;
+
+        return PlayerInputManager.MovementVector;
     }
 
     private void UpdateRunningState()
@@ -459,8 +483,24 @@ public partial class PlayerController : BaseBehaviour
 
     public bool IsGrounded()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, 0.1f, groundLayer);
+        isGrounded = Physics.CheckSphere(groundCheck.position, 0.5f, groundLayer);
         return isGrounded;
+    }
+
+    /// <summary>
+    /// This rotates the player object so that it looks in the same direction as the camera.
+    /// Useful when we want to make the player look 'straight/forward' relative to the camera.
+    /// </summary>
+    private void RotateTowardsCameraDirection()
+    {
+        float targetRotation = Mathf.Atan2(y: 0, x: 0) * Mathf.Rad2Deg + camera.eulerAngles.y;
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, 0.01f);
+    }
+
+    private void InitCamera()
+    {
+        if (camera == null)
+            camera = Blackboards.Instance.CameraBlackboard.CameraTransform;
     }
 
     #endregion Methods
@@ -489,8 +529,24 @@ public partial class PlayerController : BaseBehaviour
         velocity = jumpForce;
         isJumping = true;
 
-        LastMovementVector.y = velocity;
-        transform.Translate(LastMovementVector * Time.deltaTime);
+        DebugLog($"Jump - Added force", condition: isJumping);
+        Vector3 dir = Vector3.zero;
+        Vector3 jumpDir;
+
+        if (LastMovementVector != Vector3.zero)
+        {
+            dir = transform.forward * currentSpeed * jumpForwardMultiplier;
+            jumpDir = dir.Update(y: transform.up.y * (jumpForce));
+        }
+        else
+        {
+            jumpDir = dir.Update(y: transform.up.y * jumpForce);
+        }
+        Debug.Log(jumpDir);
+
+        Rb.AddForce(jumpDir, ForceMode.Impulse);
+        // Rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+        //transform.Translate(LastMovementVector * Time.deltaTime);
     }
 
     private void OnLandingAnimationEnded()

@@ -12226,6 +12226,10 @@ PrefabInstance:
       propertyPath: groundCheckRadius
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 5390697004610912481, guid: afa1f37fa9167d24785a73ba20f2ff7d, type: 3}
+      propertyPath: Run
+      value: 304
+      objectReference: {fileID: 0}
     - target: {fileID: 5713624174633079059, guid: afa1f37fa9167d24785a73ba20f2ff7d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

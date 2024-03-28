@@ -93,4 +93,11 @@ public static class CustomAssert
         IsNotNull(type, nameof(type));
         IsTrue(obj.GetType() == type, $"'{variableName} must be of type {type.FullName}");
     }
+
+    [Conditional("UNITY_ASSERTIONS")]
+    public static void PathHasNoExtension(string path, string variableName)
+    {
+        CustomAssert.IsNotNullOrWhitespace(path, variableName);
+        Assert.IsFalse(System.IO.Path.HasExtension(path), $"'{variableName} must not have an extension. Extension found: '{System.IO.Path.GetExtension(path)}'. Full Path: {path}");
+    }
 }

@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Resources/USS/Base/GlobalStyle.uss?fileID=7433441132597879392&amp;guid=ac71d78e7eadd9044b53fc9d280b6326&amp;type=3#GlobalStyle" />
+    <Style src="project://database/Assets/UI/Resources/USS/Base/Popups.uss?fileID=7433441132597879392&amp;guid=a212f98f2e6e49347833b7e478471e33&amp;type=3#Popups" />
+    <Style src="project://database/Assets/UI/Resources/USS/CustomControls/CustomButtons.uss?fileID=7433441132597879392&amp;guid=aa32e0dabb601b440bc9f30f2577ad95&amp;type=3#CustomButtons" />
+    <Style src="project://database/Assets/UI/Resources/USS/Screens/UIDocConfirmExitPopup.uss?fileID=7433441132597879392&amp;guid=7e2f8704313ede94d9f83b46a44f3384&amp;type=3#UIDocConfirmExitPopup" />
+    <UIDocConfirmExitPopup name="UIDocConfirmExitPopup" style="padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;" />
+</ui:UXML>

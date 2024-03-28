@@ -1,0 +1,82 @@
+.buttonsContainer {
+    justify-content: center;
+    width: auto;
+    background-color: rgba(255, 255, 255, 0);
+    padding-top: 100px;
+    padding-right: 200px;
+    padding-bottom: 60px;
+    padding-left: 200px;
+}
+
+    .buttonsContainer.vertical_container > .ucButton {
+        width: 100%;
+        padding-bottom: 75px;
+    }
+
+    .buttonsContainer.horizontal_container > .ucButton {
+        height: 100%;
+        padding: 0 75px;
+    }
+
+.ucButton {
+    width: 100%;
+    padding-bottom: 75px;
+}
+
+    .ucButton > .bttDefault {
+        background-image: url("project://database/Assets/UI/Sprites/kenney_fantasy-ui-borders/PNG/Double/Panel/panel-000.png?fileID=21300000&guid=5791538cb8e69964f97f10c767a2a19b&type=3#panel-000");
+        background-color: rgba(0, 0, 0, 0);
+        min-width: 536px;
+        min-height: 142px;
+        width: auto;
+        -unity-slice-scale: 0.5px;
+        font-size: 70px;
+        padding: 0 60px;
+        opacity: 0.75;
+        -unity-background-image-tint-color: #BDC3C7;
+    }
+
+    .ucButton > .imgArrow {
+        opacity: 0;
+    }
+
+
+    .ucButton.selected > .bttDefault,
+    .ucButton:hover > .bttDefault,
+    .ucButton:focus > .bttDefault,
+    .ucButton > .bttDefault:focus {
+        opacity: 1;
+        -unity-background-image-tint-color: #FFF;
+    }
+
+
+    .ucButton > .imgArrow.imgArrowSmall {
+        width: 266px;
+        height: 50px;
+    }
+
+    .ucButton > .imgArrow {
+        width: 501px;
+        height: 94px;
+        background-image: url("project://database/Assets/UI/Sprites/kenney_fantasy-ui-borders/PNG/Double/Divider%20Fade/divider-fade-003.png?fileID=21300000&guid=f3c3e16d539dc044fb82dce3c1b19022&type=3#divider-fade-003");
+        align-self: center;
+    }
+
+    .ucButton > .imgLeftArrow {
+        margin-right: 15px;
+        display: flex;
+        visibility: visible;
+    }
+
+    .ucButton > .imgRightArrow {
+        margin-left: 15px;
+        rotate: 180deg;
+    }
+
+
+    .ucButton:hover > .imgArrow,
+    .ucButton.selected > .imgArrow,
+    .ucButton:focus > .imgArrow,
+    .ucButton > .imgArrow:focus {
+        opacity: 1;
+    }

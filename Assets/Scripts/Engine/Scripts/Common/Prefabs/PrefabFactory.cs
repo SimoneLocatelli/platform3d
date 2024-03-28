@@ -21,7 +21,7 @@ public static class PrefabFactory
 
     public static GameObject Create(string prefabPath, Transform parent)
     {
-        var obj = Resources.Load(prefabPath) as GameObject;
+        var obj = CustomResources.Load(prefabPath) as GameObject;
         var instance = parent == null ?
             Object.Instantiate(obj) :
             Object.Instantiate(obj, parent);

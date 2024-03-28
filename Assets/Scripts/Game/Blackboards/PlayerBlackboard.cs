@@ -6,6 +6,7 @@ public class PlayerBlackboard : BaseBlackboard
 
     [ReadOnlyProperty][SerializeField] private PlayerController _playerController;
     [ReadOnlyProperty][SerializeField] private GameObject _playerGameObject;
+    [ReadOnlyProperty][SerializeField] private PlayerInputManager _playerInputManager;
     [ReadOnlyProperty][SerializeField] private LifeSystem _playerLifeSystem;
 
     #endregion Props - Readonly
@@ -38,6 +39,8 @@ public class PlayerBlackboard : BaseBlackboard
             return _playerGameObject;
         }
     }
+    public PlayerInputManager PlayerInputManager
+        => GetInitialisedComponent(PlayerGameObject, ref _playerInputManager);
 
     public LayerMask PlayerLayerMask => _playerLayerMask;
 

@@ -193,6 +193,8 @@ public partial class PlayerController : BaseBehaviour3D
 
     private new Transform camera;
 
+
+
     #endregion Dependencies
 
     #region Life Cycle
@@ -216,6 +218,9 @@ public partial class PlayerController : BaseBehaviour3D
 
     private void Update()
     {
+        if (GameBlackboard.IsGamePaused)
+            return;
+        
         Assert.IsNotNull(model);
         _modelOrientation = ModelOrientation;
         _modelOrientationNormalised = _modelOrientation.normalized;

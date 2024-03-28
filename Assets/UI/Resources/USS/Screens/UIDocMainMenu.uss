@@ -1,0 +1,36 @@
+.mainMenu {
+    background-color: rgba(0, 0, 0, 0.62);
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-color: rgb(36, 36, 36);
+    border-width: 10px;
+    width: 100%;
+    height: 100%;
+    padding-top: 0;
+}
+
+.mainMenu.backgroundImage {
+    background-image: url("project://database/Assets/UI/Sprites/backgrounds/Dungeon%20Backgrounds/dungeon%20background%205.png?fileID=21300000&guid=899761357c9a94245afd707d572dc32a&type=3#dungeon background 5");
+}
+
+.mainMenu .mainMenuBodyContainer {
+    padding-top: 731px;
+}
+
+.buttonsContainer {
+    justify-content: center;
+    width: auto;
+    background-image: url("project://database/Assets/UI/Sprites/kenney_fantasy-ui-borders/PNG/Double/Panel/panel-031.png?fileID=21300000&guid=be2bbfa5f335f864ca94faa641873404&type=3#panel-031");
+    background-color: rgba(255, 255, 255, 0);
+    -unity-slice-left: 32;
+    -unity-slice-top: 32;
+    -unity-slice-right: 32;
+    -unity-slice-bottom: 32;
+    -unity-background-image-tint-color: rgba(0, 0, 0, 0.67);
+    padding-top: 100px;
+    padding-right: 200px;
+    padding-bottom: 60px;
+    padding-left: 200px;
+    -unity-slice-scale: 1px;
+}

@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Audio;
+using UnityEngine.UIElements;
 
 [System.Serializable]
 [ExecuteAlways]
@@ -24,16 +25,39 @@ public class AudioManager : BaseBehaviour
 
     #region Methods
 
-    public static void PlayClipAtCameraPoint(AudioClip clip, float volume = 1)
+    public static AudioSource PlayClipAtPoint(string clipPath, Vector3 position, float volume = 1, string temporaryGameObjectName = null, AudioMixerGroup audioMixerGroup = null)
     {
-        AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, volume);
+        var clip = CustomResources.Load<AudioClip>(clipPath);
+        return PlayClipAtPoint(clip, position, volume, temporaryGameObjectName, audioMixerGroup);
     }
 
-    public static void PlayClipAtCameraPoint(string clipPath, float volume = 1)
+    public static AudioSource PlayClipAtPoint(AudioClip clip, Vector3 position, float volume = 1, string temporaryGameObjectName = null, AudioMixerGroup audioMixerGroup = null)
     {
-        var clip = Resources.Load<AudioClip>(clipPath);
-        PlayClipAtCameraPoint(clip, volume);
+        Assert.IsNotNull(clip);
+        CustomAssert.IsNotNegative(volume, nameof(volume));
+
+        temporaryGameObjectName ??= $"One shot audio - {clip.name}";
+        var gameObject = new GameObject(temporaryGameObjectName);
+        gameObject.transform.position = position;
+        var audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.clip = clip;
+        audioSource.spatialBlend = 1f;
+        audioSource.volume = volume;
+        if (audioMixerGroup != null)
+            audioSource.outputAudioMixerGroup = audioMixerGroup;
+
+        audioSource.Play();
+        var destroyAfterTime = clip.length;// * ((Time.timeScale < 0.01f) ? 0.01f : Time.timeScale);
+        Object.Destroy(gameObject, destroyAfterTime);
+
+        return audioSource;
     }
+
+    public static AudioSource PlayClipAtCameraPoint(AudioClip clip, float volume = 1, string temporaryGameObjectName = null, AudioMixerGroup audioMixerGroup = null)
+        => PlayClipAtPoint(clip, Camera.main.transform.position, volume, temporaryGameObjectName, audioMixerGroup);
+
+    public static AudioSource PlayClipAtCameraPoint(string clipPath, float volume = 1, string temporaryGameObjectName = null, AudioMixerGroup audioMixerGroup = null)
+       => PlayClipAtPoint(clipPath, Camera.main.transform.position, volume, temporaryGameObjectName, audioMixerGroup);
 
     public void Initialise(IEnumerable<Sound> sounds)
     {

@@ -1,0 +1,99 @@
+UIDocSettings {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: rgb(0, 0, 0);
+}
+
+    UIDocSettings .background {
+        width: 100%;
+        height: 100%;
+        background-color: rgba(8, 8, 26, 0.56);
+        justify-content: space-between;
+        position: absolute;
+    }
+
+    UIDocSettings.popup {
+        margin: 0;
+        padding: 0;
+        align-self: center;
+        align-items: center;
+    }
+
+        UIDocSettings.popup .popupBody {
+            width: 50%;
+            min-height: auto;
+            padding: 70px;
+        }
+
+    UIDocSettings .popupBody .settingContainer {
+    }
+
+        UIDocSettings .popupBody .settingContainer .lblText {
+            font-size: 56px;
+        }
+
+    UIDocSettings.popup .popupBody .lblText {
+        padding: 0;
+        margin: 0;
+        margin-top: 100px;
+    }
+
+    UIDocSettings .popupBody .sliderVolume {
+        margin: 25px 0;
+    }
+
+        UIDocSettings .popupBody .sliderVolume .unity-base-slider__input {
+            opacity: 0.2;
+        }
+
+        UIDocSettings .popupBody .sliderVolume:focus .unity-base-slider__input {
+            opacity: 1;
+        }
+
+        UIDocSettings .popupBody .sliderVolume .unity-base-slider__input:focus {
+            opacity: 1;
+        }
+
+    UIDocSettings .popupBody .dpdResolution {
+        width: 100%;
+        height: 70px;
+        opacity: 0.46;
+    }
+
+        UIDocSettings .popupBody .dpdResolution .unity-base-popup-field__arrow {
+            width: 40px;
+            height: 40px;
+        }
+
+        UIDocSettings .popupBody .dpdResolution .unity-base-field__input {
+            background-color: rgb(87, 85, 84);
+            color: white;
+            opacity: 0.46;
+        }
+
+        UIDocSettings .popupBody .dpdResolution .unity-text-element {
+            color: white;
+        }
+
+        UIDocSettings .popupBody .dpdResolution:focus .unity-base-field__input {
+            opacity: 1;
+        }
+
+    UIDocSettings .popupBody .settingContainer .tgglFullscreen {
+        -unity-background-image-tint-color: rgb(253, 0, 0);
+    }
+
+        UIDocSettings .popupBody .settingContainer .tgglFullscreen #unity-checkmark {
+            width: 75px;
+            height: 75px;
+            border: none;
+            background-color: rgb(87, 85, 84);
+            -unity-background-image-tint-color: #FFFFFF;
+            opacity: 0.46;
+        }
+
+        UIDocSettings .popupBody .settingContainer .tgglFullscreen:focus #unity-checkmark {
+            opacity: 1;
+        }

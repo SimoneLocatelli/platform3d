@@ -25,12 +25,20 @@ public class PlayerInputManager : BaseBehaviour
 
     public bool AttackPressedDown => _attackPressedDown;
 
+    public bool PausePressedDown => _pausePressedDown;
+
+    public bool ConfirmPressedDown => _confirmPressedDown;
+
+
+
+
     #endregion Private Fields
 
     #region Public Properties
+
     public Vector3 MovementVector => _movementVector;
 
-    #endregion
+    #endregion Public Properties
 
     #region Props Key Bindings
 
@@ -43,72 +51,45 @@ public class PlayerInputManager : BaseBehaviour
 
     [Header("Actions")]
     public KeyCode Jump = KeyCode.Space;
+
     public KeyCode Attack = KeyCode.Mouse0;
 
     public KeyCode Run = KeyCode.LeftControl;
 
+    [Header("Game")]
+    public KeyCode Pause = KeyCode.Escape;
+    public KeyCode Confirm = KeyCode.KeypadEnter;
+
+
     #endregion Props Key Bindings
 
     [Header("Debug")]
-    [SerializeField]
-    [ReadOnlyProperty]
-    private Vector3 _movementVector = new Vector3();
+    [SerializeField][ReadOnlyProperty] private Vector3 _movementVector = new Vector3();
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    bool _attackPressed;
+    [SerializeField][ReadOnlyProperty] private bool _attackPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    bool _attackPressedDown;
+    [SerializeField][ReadOnlyProperty] private bool _upPressed;
+    [SerializeField][ReadOnlyProperty] private bool _upPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _upPressed;
+    [SerializeField][ReadOnlyProperty] private bool _downPressed;
+    [SerializeField][ReadOnlyProperty] private bool _downPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _upPressedDown;
+    [SerializeField][ReadOnlyProperty] private bool _leftPressed;
+    [SerializeField][ReadOnlyProperty] private bool _leftPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _downPressed;
+    [SerializeField][ReadOnlyProperty] private bool _rightPressed;
+    [SerializeField][ReadOnlyProperty] private bool _rightPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _downPressedDown;
+    [SerializeField][ReadOnlyProperty] private bool _jumpPressed;
+    [SerializeField][ReadOnlyProperty] private bool _jumpPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _leftPressed;
+    [SerializeField][ReadOnlyProperty] private bool _runPressed;
+    [SerializeField][ReadOnlyProperty] private bool _runPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _leftPressedDown;
+    [SerializeField][ReadOnlyProperty] private bool _pausePressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _rightPressed;
+    [SerializeField][ReadOnlyProperty] private bool _confirmPressedDown;
 
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _rightPressedDown;
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _jumpPressed;
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _jumpPressedDown;
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _runPressed;
-
-    [SerializeField]
-    [ReadOnlyProperty]
-    private bool _runPressedDown;
 
     public void Update()
     {
@@ -130,8 +111,11 @@ public class PlayerInputManager : BaseBehaviour
         _runPressed = Input.GetKey(Run);
         _runPressedDown = Input.GetKeyDown(Run);
 
-        _attackPressed = Input.GetKey(Attack);
         _attackPressedDown = Input.GetKeyDown(Attack);
+
+        _pausePressedDown = Input.GetKeyDown(Pause);
+
+        _confirmPressedDown = Input.GetKeyDown(Confirm);
 
         UpdateMovementVector();
 

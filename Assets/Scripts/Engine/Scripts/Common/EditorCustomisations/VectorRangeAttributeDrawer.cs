@@ -1,12 +1,13 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+
 using UnityEditor;
+using UnityEngine;
 
 [CustomPropertyDrawer(typeof(VectorRangeAttribute))]
 public class VectorRangeAttributeDrawer : PropertyDrawer
 {
-    const int helpHeight = 30;
-    const int textHeight = 16;
-    VectorRangeAttribute rangeAttribute { get { return (VectorRangeAttribute)attribute; } }
+    private VectorRangeAttribute rangeAttribute => (VectorRangeAttribute)attribute;
+
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         Color previous = GUI.color;
@@ -31,6 +32,7 @@ public class VectorRangeAttributeDrawer : PropertyDrawer
         DrawHelpBox(helpPosition, property);
         GUI.color = previous;
     }
+
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         if (!IsValid(property))
@@ -39,7 +41,8 @@ public class VectorRangeAttributeDrawer : PropertyDrawer
         }
         return base.GetPropertyHeight(property, label);
     }
-    void DrawHelpBox(Rect position, SerializedProperty prop)
+
+    private void DrawHelpBox(Rect position, SerializedProperty prop)
     {
         // No need for a help box if the pattern is valid.
         if (IsValid(prop))
@@ -47,9 +50,11 @@ public class VectorRangeAttributeDrawer : PropertyDrawer
 
         EditorGUI.HelpBox(position, string.Format("Invalid Range X [{0}]-[{1}] Y [{2}]-[{3}]", rangeAttribute.fMinX, rangeAttribute.fMaxX, rangeAttribute.fMinY, rangeAttribute.fMaxY), MessageType.Error);
     }
-    bool IsValid(SerializedProperty prop)
+
+    private bool IsValid(SerializedProperty prop)
     {
         Vector2 vector = prop.vector2Value;
         return vector.x >= rangeAttribute.fMinX && vector.x <= rangeAttribute.fMaxX && vector.y >= rangeAttribute.fMinY && vector.y <= rangeAttribute.fMaxY;
     }
 }
+#endif

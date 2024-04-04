@@ -23,7 +23,7 @@ public class PathVisualiser : MonoBehaviour
         var path = _pathUpdater.Path;
         var pathTask = _pathUpdater.PathTask;
 
-        if(DrawNodePathMetrics)
+        if (DrawNodePathMetrics)
             DoDrawNodePathMetrics(pathTask);
 
         var nodesCenterPos = path.GetAllNodesCenterPosition().ToList();
@@ -40,14 +40,15 @@ public class PathVisualiser : MonoBehaviour
         Gizmos2D.DrawOpenPolygon(nodesCenterPos);
     }
 
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
     private static void DoDrawNodePathMetrics(PathTask pathTask)
     {
+#if UNITY_EDITOR
         var grid = pathTask.Grid;
         var path = pathTask.Path;
         var cellSize = grid.CellSize;
         var halfCellSize = cellSize / 2;
         var labelsDistance = cellSize / 6;
-
 
         for (int x = 0; x < grid.Width; x++)
             for (int y = 0; y < grid.Height; y++)
@@ -61,6 +62,8 @@ public class PathVisualiser : MonoBehaviour
                 DebugStringDrawer.DrawString($"G ({node.G:F2})", position.Add(yDelta: -labelsDistance * 2), colour: Color.white);
                 DebugStringDrawer.DrawString($"H ({node.H:F2})", position.Add(yDelta: -labelsDistance * 3), colour: Color.white);
             }
+#endif
+
     }
 
     private void Start()

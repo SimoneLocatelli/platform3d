@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
+﻿#if UNITY_EDITOR
+using System.Diagnostics;
 using UnityEngine;
-
 public class DebugStringDrawer
 {
-    [Conditional("DEBUG")]
+    [Conditional("UNITY_EDITOR")]
     public static void DrawString(string text, Vector3 worldPos, float oX = 0, float oY = 0, Color? colour = null)
     {
         UnityEditor.Handles.BeginGUI();
@@ -49,3 +49,4 @@ public class DebugStringDrawer
         return position;
     }
 }
+#endif

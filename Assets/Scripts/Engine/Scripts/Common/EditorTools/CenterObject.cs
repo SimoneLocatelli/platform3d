@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 [ExecuteAlways]
 public class CenterObject : BaseBehaviourLight
@@ -24,13 +23,13 @@ public class CenterObject : BaseBehaviourLight
         var y = SnapToPosition(position.y, Offset.y);
         var z = SnapToPosition(position.z, Offset.z);
 
-        //        var x = Mathf.FloorToInt(position.x) + Offset.x;
-        //        var y = Mathf.FloorToInt(position.y) + Offset.y;
-        //        var z = Mathf.FloorToInt(position.z) + Offset.z;
+        // var x = Mathf.FloorToInt(position.x) + Offset.x;
+        // var y = Mathf.FloorToInt(position.y) + Offset.y;
+        // var z = Mathf.FloorToInt(position.z) + Offset.z;
         var newPosition = new Vector3(x, y, z);
 
         DebugLog($"Moving from {position} to {newPosition}");
- tr.position = newPosition;
+        tr.position = newPosition;
         tr.hasChanged = false;
     }
 

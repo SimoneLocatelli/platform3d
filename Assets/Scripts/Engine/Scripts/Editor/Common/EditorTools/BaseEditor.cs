@@ -3,7 +3,7 @@ using UnityEditor;
 
 public abstract class BaseEditor<T> : Editor, ICustomEditor where T : UnityEngine.Object
 {
-    public T Target { get => (T)target; }
+    public T Target => (T)target;
 
     public SerializedProperty FindProperty(string propertyName)
         => serializedObject.FindProperty(propertyName);
